@@ -1,19 +1,11 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { Icon } from 'leaflet';
+import { useEffect, useRef } from 'react';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default marker icons
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-// @ts-ignore
-delete Icon.Default.prototype._getIconUrl;
-Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
-});
 
 interface ProfileMapProps {
   latitude: number;
@@ -23,6 +15,49 @@ interface ProfileMapProps {
 }
 
 const ProfileMap = ({ latitude, longitude, name, googleMapsUrl }: ProfileMapProps) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+
+  useEffect(() => {
+    if (!mapRef.current || !latitude || !longitude) return;
+
+    // Initialize map only once
+    if (!mapInstanceRef.current) {
+      // Fix default icon
+      const DefaultIcon = L.icon({
+        iconUrl: markerIcon,
+        iconRetinaUrl: markerIcon2x,
+        shadowUrl: markerShadow,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      });
+      L.Marker.prototype.options.icon = DefaultIcon;
+
+      // Create map
+      mapInstanceRef.current = L.map(mapRef.current).setView([latitude, longitude], 15);
+
+      // Add tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(mapInstanceRef.current);
+
+      // Add marker
+      L.marker([latitude, longitude])
+        .addTo(mapInstanceRef.current)
+        .bindPopup(name);
+    }
+
+    // Cleanup
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [latitude, longitude, name]);
+
   if (!latitude || !longitude) {
     return (
       <div className="w-full h-[400px] bg-muted rounded-lg flex items-center justify-center">
@@ -33,23 +68,11 @@ const ProfileMap = ({ latitude, longitude, name, googleMapsUrl }: ProfileMapProp
 
   return (
     <div className="space-y-4">
-      <div className="w-full h-[400px] rounded-lg overflow-hidden">
-        <MapContainer
-          center={[latitude, longitude]}
-          zoom={15}
-          scrollWheelZoom={false}
-          style={{ height: '100%', width: '100%' }}
-          key={`${latitude}-${longitude}`}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          <Marker position={[latitude, longitude]}>
-            <Popup>{name}</Popup>
-          </Marker>
-        </MapContainer>
-      </div>
+      <div 
+        ref={mapRef} 
+        className="w-full h-[400px] rounded-lg z-0"
+        style={{ background: '#f0f0f0' }}
+      />
 
       {googleMapsUrl && (
         <a

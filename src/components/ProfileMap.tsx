@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -34,19 +33,23 @@ const ProfileMap = ({ latitude, longitude, name, googleMapsUrl }: ProfileMapProp
 
   return (
     <div className="space-y-4">
-      <MapContainer
-        center={[latitude, longitude]}
-        zoom={15}
-        className="w-full h-[400px] rounded-lg z-0"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Marker position={[latitude, longitude]}>
-          <Popup>{name}</Popup>
-        </Marker>
-      </MapContainer>
+      <div className="w-full h-[400px] rounded-lg overflow-hidden">
+        <MapContainer
+          center={[latitude, longitude]}
+          zoom={15}
+          scrollWheelZoom={false}
+          style={{ height: '100%', width: '100%' }}
+          key={`${latitude}-${longitude}`}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Marker position={[latitude, longitude]}>
+            <Popup>{name}</Popup>
+          </Marker>
+        </MapContainer>
+      </div>
 
       {googleMapsUrl && (
         <a

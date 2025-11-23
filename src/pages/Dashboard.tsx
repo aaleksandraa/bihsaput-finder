@@ -95,7 +95,7 @@ const Dashboard = () => {
                   {!profile.registration_completed && (
                     <div className="mt-4 p-4 bg-accent rounded-lg">
                       <p className="text-sm mb-2">Vaš profil nije potpun. Dovršite registraciju da biste postali vidljivi u pretragama.</p>
-                      <Button size="sm" className="bg-hero-gradient">
+                      <Button size="sm" className="bg-hero-gradient" onClick={() => navigate("/registracija")}>
                         Dovrši profil
                       </Button>
                     </div>
@@ -104,7 +104,7 @@ const Dashboard = () => {
               ) : (
                 <div className="text-center py-6">
                   <p className="text-muted-foreground mb-4">Nemate profil. Kreirajte ga sada!</p>
-                  <Button className="bg-hero-gradient">
+                  <Button className="bg-hero-gradient" onClick={() => navigate("/registracija")}>
                     Kreiraj profil
                   </Button>
                 </div>

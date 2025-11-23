@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
@@ -31,13 +32,30 @@ const Index = () => {
     setLoading(true);
     let query = supabase
       .from('profiles')
-      .select('*')
+      .select(`
+        *,
+        personal_city:cities!profiles_personal_city_id_fkey(name, entity_id),
+        business_city:cities!profiles_business_city_id_fkey(name, entity_id),
+        profile_services(service_id, service_categories(name))
+      `)
       .eq('is_active', true)
       .eq('registration_completed', true)
       .limit(12);
 
     if (filters?.searchTerm) {
       query = query.or(`first_name.ilike.%${filters.searchTerm}%,last_name.ilike.%${filters.searchTerm}%,company_name.ilike.%${filters.searchTerm}%`);
+    }
+    
+    if (filters?.entity && filters.entity !== 'all') {
+      const { data: entityData } = await supabase
+        .from('entities')
+        .select('id')
+        .eq('code', filters.entity)
+        .single();
+      
+      if (entityData) {
+        query = query.or(`personal_city.entity_id.eq.${entityData.id},business_city.entity_id.eq.${entityData.id}`);
+      }
     }
 
     const { data, error } = await query;
@@ -132,11 +150,22 @@ const Index = () => {
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
             </div>
           ) : profiles.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {profiles.map((profile) => (
-                <ProfileCard key={profile.id} profile={profile} />
-              ))}
-            </div>
+            <>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {profiles.map((profile) => (
+                  <ProfileCard key={profile.id} profile={profile} />
+                ))}
+              </div>
+              
+              <div className="mt-8 text-center">
+                <Link to="/mapa">
+                  <Button variant="outline" size="lg">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Prikaži na mapi
+                  </Button>
+                </Link>
+              </div>
+            </>
           ) : (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">
@@ -154,7 +183,7 @@ const Index = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Pridružite se našoj platformi i povećajte svoju vidljivost. Besplatna registracija!
           </p>
-          <Button size="lg" className="bg-hero-gradient text-lg px-8">
+          <Button size="lg" className="bg-hero-gradient text-lg px-8" onClick={() => window.location.href = '/auth?mode=register'}>
             Registrujte se besplatno
           </Button>
         </div>

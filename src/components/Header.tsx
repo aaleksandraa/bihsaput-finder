@@ -80,7 +80,7 @@ const Header = ({ user }: HeaderProps) => {
 
   return (
     <header 
-      className="sticky top-0 z-50 w-full border-b border-white/20 shadow-sm bg-transparent backdrop-blur-md"
+      className="sticky top-0 z-50 w-full border-b border-white/20 shadow-sm bg-black/20 backdrop-blur-md"
     >
       <div className="container px-4 md:px-6">
         <div className="flex h-16 md:h-20 items-center justify-between">

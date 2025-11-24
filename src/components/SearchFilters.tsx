@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MapPin, Briefcase, ChevronDown } from "lucide-react";
@@ -15,13 +16,15 @@ import {
 } from "@/components/ui/select";
 
 interface SearchFiltersProps {
-  onSearch: (filters: any) => void;
+  onSearch?: (filters: any) => void;
 }
 
 const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [entity, setEntity] = useState("");
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || "");
+  const [entity, setEntity] = useState(searchParams.get('entity') || "");
+  const [selectedServices, setSelectedServices] = useState<string[]>(searchParams.getAll('service'));
   const [serviceCategories, setServiceCategories] = useState<any[]>([]);
   const [servicesOpen, setServicesOpen] = useState(false);
 
@@ -54,11 +57,24 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
   };
 
   const handleSearch = () => {
-    onSearch({
+    const filters = {
       searchTerm,
       entity,
       services: selectedServices,
-    });
+    };
+
+    // If onSearch is provided, call it (for Search page)
+    if (onSearch) {
+      onSearch(filters);
+    } else {
+      // Navigate to search page with query params (for Index page)
+      const params = new URLSearchParams();
+      if (searchTerm) params.set('q', searchTerm);
+      if (entity && entity !== 'all') params.set('entity', entity);
+      selectedServices.forEach(service => params.append('service', service));
+      
+      navigate(`/search?${params.toString()}`);
+    }
   };
 
   return (

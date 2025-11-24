@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Step9Props {
   data: any;
@@ -67,6 +68,26 @@ const Step9Descriptions = ({ data, onChange }: Step9Props) => {
         <p className="text-sm text-muted-foreground mt-1">
           Nakon ovog koraka vaš profil će biti kreiran i bit ćete vidljivi u pretragama.
         </p>
+      </div>
+
+      <div className="p-4 border rounded-lg bg-background space-y-4">
+        <h4 className="font-semibold text-sm">Uslovi korišćenja</h4>
+        <div className="flex items-start space-x-3">
+          <Checkbox
+            id="terms"
+            checked={data.terms_accepted || false}
+            onCheckedChange={(checked) => handleChange('terms_accepted', checked)}
+            className="mt-1"
+          />
+          <label
+            htmlFor="terms"
+            className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
+          >
+            Prihvatam da će podaci koje sam unio biti javno dostupni na platformi i razumijem da će moje ime, 
+            prezime, kontakt informacije, poslovni podaci i informacije o uslugama biti vidljivi svim 
+            korisnicima platforme u svrhu pronalaženja i kontaktiranja profesionalaca.
+          </label>
+        </div>
       </div>
     </div>
   );

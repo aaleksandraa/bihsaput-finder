@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import Footer from "@/components/Footer";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -39,44 +40,47 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/mapa" element={<MapView />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/usluge/:categoryId" element={<ServiceCategory />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/registracija" 
-            element={
-              <ProtectedRoute>
-                <Registration />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/profil/:slug" element={<Profile />} />
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <Admin />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/sitemap.xml" element={<SitemapRedirect />} />
-          <Route path="/rss.xml" element={<RSSRedirect />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <div className="flex flex-col min-h-screen">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/mapa" element={<MapView />} />
+            <Route path="/search" element={<Search />} />
+            <Route path="/usluge/:categoryId" element={<ServiceCategory />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/registracija" 
+              element={
+                <ProtectedRoute>
+                  <Registration />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/profil/:slug" element={<Profile />} />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <Admin />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/sitemap.xml" element={<SitemapRedirect />} />
+            <Route path="/rss.xml" element={<RSSRedirect />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Footer />
+        </div>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -100,6 +100,10 @@ const Registration = () => {
         toast.error("Detaljni opis mora imati najmanje 100 karaktera");
         return false;
       }
+      if (!formData.terms_accepted) {
+        toast.error("Morate prihvatiti uslove korišćenja kako biste nastavili");
+        return false;
+      }
     }
     
     return true;

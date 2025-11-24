@@ -9,6 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { 
+  useProfile, 
+  useProfileGallery, 
+  useProfileServices, 
+  useProfileReferences, 
+  useProfileCertificates,
+  useWorkingHours 
+} from "@/hooks/useProfiles";
 import {
   Mail,
   Phone,
@@ -30,13 +38,20 @@ const DAYS = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Peta
 const Profile = () => {
   const { slug } = useParams();
   const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [services, setServices] = useState<any[]>([]);
-  const [workingHours, setWorkingHours] = useState<any[]>([]);
-  const [references, setReferences] = useState<any[]>([]);
-  const [certificates, setCertificates] = useState<any[]>([]);
-  const [gallery, setGallery] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // Use React Query hooks for efficient data fetching
+  const { data: profile, isLoading: profileLoading } = useProfile(slug);
+  const { data: gallery = [] } = useProfileGallery(profile?.id);
+  const { data: servicesData = [] } = useProfileServices(profile?.id);
+  const { data: references = [] } = useProfileReferences(profile?.id);
+  const { data: certificates = [] } = useProfileCertificates(profile?.id);
+  const { data: workingHours = [] } = useWorkingHours(profile?.id);
+
+  // Extract services from the data structure
+  const services = servicesData.map((item: any) => ({
+    service_id: item.service_id,
+    service_categories: item.service_categories
+  }));
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -44,116 +59,7 @@ const Profile = () => {
     });
   }, []);
 
-  useEffect(() => {
-    if (slug) {
-      fetchProfile();
-    }
-  }, [slug]);
-
-  const fetchProfile = async () => {
-    setLoading(true);
-
-    // Fetch profile data with public contact information
-    const { data: profileData, error } = await supabase
-      .from('profiles')
-      .select(`
-        id,
-        first_name,
-        last_name,
-        company_name,
-        business_type,
-        business_city_id,
-        short_description,
-        long_description,
-        profile_image_url,
-        slug,
-        email,
-        phone,
-        website,
-        years_experience,
-        works_online,
-        works_locally_only,
-        has_physical_office,
-        latitude,
-        longitude,
-        professional_organizations,
-        linkedin_url,
-        facebook_url,
-        instagram_url,
-        is_active,
-        registration_completed,
-        created_at,
-        updated_at,
-        business_city:cities!profiles_business_city_id_fkey(name, postal_code)
-      `)
-      .eq('slug', slug)
-      .eq('is_active', true)
-      .eq('registration_completed', true)
-      .single();
-
-    if (error || !profileData) {
-      setLoading(false);
-      return;
-    }
-
-    setProfile(profileData);
-
-    // Fetch services
-    const { data: servicesData } = await supabase
-      .from('profile_services')
-      .select('service_id, service_categories(*)')
-      .eq('profile_id', profileData.id);
-    
-    if (servicesData) {
-      setServices(servicesData);
-    }
-
-    // Fetch working hours
-    const { data: hoursData } = await supabase
-      .from('working_hours')
-      .select('*')
-      .eq('profile_id', profileData.id)
-      .order('day_of_week');
-    
-    if (hoursData) {
-      setWorkingHours(hoursData);
-    }
-
-    // Fetch references
-    const { data: refsData } = await supabase
-      .from('client_references')
-      .select('*')
-      .eq('profile_id', profileData.id);
-    
-    if (refsData) {
-      setReferences(refsData);
-    }
-
-    // Fetch certificates
-    const { data: certsData } = await supabase
-      .from('certificates')
-      .select('*')
-      .eq('profile_id', profileData.id);
-    
-    if (certsData) {
-      setCertificates(certsData);
-    }
-
-    // Fetch gallery
-    const { data: galleryData } = await supabase
-      .from('gallery_images')
-      .select('*')
-      .eq('profile_id', profileData.id)
-      .order('display_order');
-    
-    if (galleryData) {
-      setGallery(galleryData);
-    }
-
-    setLoading(false);
-  };
-
-  if (loading) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header user={user} />
@@ -343,9 +249,9 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Desktop Layout */}
-            <div className="hidden sm:flex items-start gap-6">
-              {/* Profile Image */}
+            {/* Desktop Layout - 3 Column */}
+            <div className="hidden sm:grid sm:grid-cols-[auto_1fr_auto] gap-6 items-start">
+              {/* Column 1: Profile Image */}
               <div className="flex-shrink-0">
                 {profile.profile_image_url ? (
                   <img 
@@ -360,8 +266,8 @@ const Profile = () => {
                 )}
               </div>
               
-              {/* Profile Info */}
-              <div className="flex-1 space-y-3">
+              {/* Column 2: Profile Info */}
+              <div className="space-y-3">
                 <div>
                   <h1 className="text-3xl md:text-4xl font-bold mb-1">{displayName}</h1>
                   {profile.short_description && (
@@ -391,26 +297,26 @@ const Profile = () => {
                     </Badge>
                   )}
                 </div>
+              </div>
 
-                {/* Contact Buttons */}
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {profile.email && (
-                    <Button size="sm" asChild>
-                      <a href={`mailto:${profile.email}`}>
-                        <Mail className="h-4 w-4 mr-1.5" />
-                        Kontakt
-                      </a>
-                    </Button>
-                  )}
-                  {profile.phone && (
-                    <Button size="sm" variant="outline" asChild>
-                      <a href={`tel:${profile.phone}`}>
-                        <Phone className="h-4 w-4 mr-1.5" />
-                        Pozovi
-                      </a>
-                    </Button>
-                  )}
-                </div>
+              {/* Column 3: Contact Buttons */}
+              <div className="flex flex-col gap-2 min-w-[140px]">
+                {profile.email && (
+                  <Button size="sm" className="w-full" asChild>
+                    <a href={`mailto:${profile.email}`}>
+                      <Mail className="h-4 w-4 mr-1.5" />
+                      Kontakt
+                    </a>
+                  </Button>
+                )}
+                {profile.phone && (
+                  <Button size="sm" variant="outline" className="w-full" asChild>
+                    <a href={`tel:${profile.phone}`}>
+                      <Phone className="h-4 w-4 mr-1.5" />
+                      Pozovi
+                    </a>
+                  </Button>
+                )}
               </div>
             </div>
           </div>

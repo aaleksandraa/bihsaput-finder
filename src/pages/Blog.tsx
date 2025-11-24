@@ -123,9 +123,19 @@ export default function Blog() {
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">Blog</h1>
-            <p className="text-muted-foreground mb-8">
-              Najnoviji članci i savjeti o računovodstvu i knjigovodstvu
-            </p>
+            <div className="flex justify-between items-center mb-8">
+              <p className="text-muted-foreground">
+                Najnoviji članci i savjeti o računovodstvu i knjigovodstvu
+              </p>
+              <a 
+                href="/rss.xml" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                RSS Feed
+              </a>
+            </div>
 
             {/* Filters */}
             <div className="mb-8 space-y-4">

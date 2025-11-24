@@ -47,6 +47,16 @@ export const SEO = ({
       
       {/* Canonical URL */}
       <link rel="canonical" href={fullUrl} />
+      
+      {/* RSS Feed - only on blog pages */}
+      {url?.includes('/blog') && (
+        <link 
+          rel="alternate" 
+          type="application/rss+xml" 
+          title="Knjigovođe BiH Blog RSS Feed" 
+          href="https://knjigovodje.ba/rss.xml" 
+        />
+      )}
     </Helmet>
   );
 };

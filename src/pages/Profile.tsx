@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import ProfileMap from "@/components/ProfileMap";
 import { SEO } from "@/components/SEO";
+import { ProfileStructuredData } from "@/components/ProfileStructuredData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -192,6 +193,11 @@ const Profile = () => {
         url={`/profil/${slug}`}
         type="profile"
         image={profile.profile_image_url}
+      />
+      <ProfileStructuredData 
+        profile={profile}
+        services={services}
+        workingHours={workingHours}
       />
       <Header user={user} />
 

@@ -28,7 +28,7 @@ const Index = () => {
     fetchProfiles();
   }, []);
 
-  const fetchProfiles = async (filters?: any) => {
+  const fetchProfiles = async () => {
     setLoading(true);
     let query = supabase
       .from('profiles')
@@ -42,43 +42,12 @@ const Index = () => {
       .eq('registration_completed', true)
       .limit(12);
 
-    if (filters?.searchTerm) {
-      query = query.or(`first_name.ilike.%${filters.searchTerm}%,last_name.ilike.%${filters.searchTerm}%,company_name.ilike.%${filters.searchTerm}%`);
-    }
-    
-    if (filters?.entity && filters.entity !== 'all') {
-      const { data: entityData } = await supabase
-        .from('entities')
-        .select('id')
-        .eq('code', filters.entity)
-        .single();
-      
-      if (entityData) {
-        query = query.or(`personal_city.entity_id.eq.${entityData.id},business_city.entity_id.eq.${entityData.id}`);
-      }
-    }
-
     const { data, error } = await query;
+    setLoading(false);
 
     if (!error && data) {
-      let filteredProfiles = data;
-
-      // Filter by services if selected
-      if (filters?.services && filters.services.length > 0) {
-        filteredProfiles = data.filter((profile: any) => {
-          const profileServiceIds = profile.profile_services?.map((ps: any) => ps.service_id) || [];
-          return filters.services.some((serviceId: string) => profileServiceIds.includes(serviceId));
-        });
-      }
-
-      setProfiles(filteredProfiles);
+      setProfiles(data);
     }
-
-    setLoading(false);
-  };
-
-  const handleSearch = (filters: any) => {
-    fetchProfiles(filters);
   };
 
   return (
@@ -104,7 +73,7 @@ const Index = () => {
       <section className="py-12 -mt-8 relative z-20">
         <div className="container">
           <div className="bg-card rounded-2xl shadow-large p-8 animate-slide-in-right">
-            <SearchFilters onSearch={handleSearch} />
+            <SearchFilters />
           </div>
         </div>
       </section>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ChevronRight, Briefcase } from "lucide-react";
@@ -80,6 +81,12 @@ const ServiceCategory = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={category.name}
+        description={category.description || `Pregledajte podkategorije i pronađite knjigovođu za ${category.name} usluge u Bosni i Hercegovini.`}
+        keywords={`${category.name}, knjigovodstvene usluge, računovodstvo bih`}
+        url={`/usluge/${categoryId}`}
+      />
       <Header user={user} />
 
       <div className="container py-8">

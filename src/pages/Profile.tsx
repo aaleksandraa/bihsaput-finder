@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import ProfileMap from "@/components/ProfileMap";
+import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -152,6 +153,22 @@ const Profile = () => {
 
   const displayName = profile.company_name || `${profile.first_name} ${profile.last_name}`;
 
+  // Generate SEO content
+  const seoTitle = displayName;
+  const seoDescription = profile.short_description || 
+    `${displayName} - ${profile.business_type === 'company' ? 'Računovodstvena firma' : 'Knjigovođa'} u ${profile.business_city?.name || 'Bosni i Hercegovini'}. ${profile.years_experience ? `${profile.years_experience} godina iskustva.` : ''} Kontaktirajte za profesionalne računovodstvene usluge.`;
+  
+  const seoKeywords = [
+    displayName,
+    'knjigovođa',
+    'računovođa',
+    profile.business_city?.name,
+    profile.business_type === 'company' ? 'računovodstvena firma' : 'računovođa',
+    'bosna i hercegovina',
+    'bih',
+    services.map(s => s.service_categories.name).join(', ')
+  ].filter(Boolean).join(', ');
+
   // Group services by parent category
   const mainCategories = services
     .map(s => s.service_categories)
@@ -168,6 +185,14 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+        keywords={seoKeywords}
+        url={`/profil/${slug}`}
+        type="profile"
+        image={profile.profile_image_url}
+      />
       <Header user={user} />
 
       {/* Hero Section */}

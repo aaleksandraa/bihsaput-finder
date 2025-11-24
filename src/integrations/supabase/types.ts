@@ -387,6 +387,27 @@ export type Database = {
           },
         ]
       }
+      site_settings: {
+        Row: {
+          created_at: string | null
+          google_analytics_id: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          google_analytics_id?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          google_analytics_id?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null

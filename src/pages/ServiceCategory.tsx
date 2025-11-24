@@ -102,9 +102,9 @@ const ServiceCategory = () => {
                 <Briefcase className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">{category.name}</h1>
+                <h1 className="text-3xl font-bold leading-relaxed">{category.name}</h1>
                 {category.description && (
-                  <p className="text-muted-foreground mt-1">{category.description}</p>
+                  <p className="text-muted-foreground mt-1 leading-relaxed">{category.description}</p>
                 )}
               </div>
             </div>
@@ -118,7 +118,7 @@ const ServiceCategory = () => {
                   <Link key={sub.id} to={`/search?service=${sub.id}`}>
                     <Card className="h-full hover:shadow-lg transition-all hover-scale cursor-pointer">
                       <CardHeader>
-                        <CardTitle className="flex items-center justify-between">
+                        <CardTitle className="flex items-center justify-between leading-relaxed">
                           {sub.name}
                           <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         </CardTitle>

@@ -93,61 +93,61 @@ const Search = () => {
       <Header user={user} />
 
       {/* Search Section */}
-      <section className="py-8 bg-muted/50">
-        <div className="container">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
+      <section className="py-10 bg-muted/30">
+        <div className="container max-w-6xl">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors font-medium">
             <ArrowLeft className="h-4 w-4" />
             Nazad na početnu
           </Link>
           
-          <div className="bg-card rounded-2xl shadow-lg p-6 md:p-8">
-            <h1 className="text-2xl font-bold mb-6">Pretraga knjigovođa</h1>
+          <div className="bg-card rounded-2xl shadow-lg p-6 md:p-10 border border-border/50">
+            <h1 className="text-3xl md:text-4xl font-bold mb-8 tracking-tight">Pretraga knjigovođa</h1>
             <SearchFilters onSearch={handleSearch} />
           </div>
         </div>
       </section>
 
       {/* Results Section */}
-      <section className="py-12">
-        <div className="container">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-2">
+      <section className="py-16">
+        <div className="container max-w-7xl">
+          <div className="mb-10">
+            <h2 className="text-3xl font-bold mb-3 tracking-tight">
               {hasActiveFilters ? 'Rezultati pretrage' : 'Svi profili'}
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-base text-muted-foreground font-medium">
               {loading ? 'Pretraga u toku...' : `Pronađeno ${profiles.length} profil${profiles.length !== 1 ? 'a' : ''}`}
             </p>
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+            <div className="text-center py-20">
+              <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
             </div>
           ) : profiles.length > 0 ? (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12">
                 {profiles.map((profile) => (
                   <ProfileCard key={profile.id} profile={profile} />
                 ))}
               </div>
               
-              <div className="mt-8 text-center">
+              <div className="text-center">
                 <Link to="/mapa">
-                  <Button variant="outline" size="lg">
-                    <MapPin className="h-4 w-4 mr-2" />
+                  <Button variant="outline" size="lg" className="font-semibold">
+                    <MapPin className="h-5 w-5 mr-2" />
                     Prikaži na mapi
                   </Button>
                 </Link>
               </div>
             </>
           ) : (
-            <div className="text-center py-12 bg-muted/50 rounded-lg">
-              <p className="text-lg font-medium mb-2">Nema pronađenih rezultata</p>
-              <p className="text-muted-foreground mb-6">
+            <div className="text-center py-16 bg-muted/30 rounded-2xl border border-border/50">
+              <p className="text-xl font-semibold mb-2">Nema pronađenih rezultata</p>
+              <p className="text-muted-foreground mb-8 text-base">
                 Pokušajte promijeniti filtere pretrage
               </p>
               <Link to="/">
-                <Button variant="outline">
+                <Button variant="outline" size="lg" className="font-semibold">
                   Nazad na početnu
                 </Button>
               </Link>

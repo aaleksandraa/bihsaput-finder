@@ -160,9 +160,17 @@ const Profile = () => {
       <section className="bg-gradient-to-b from-primary/10 to-background py-12">
         <div className="container">
           <div className="flex flex-col md:flex-row items-start gap-8">
-            <div className="h-32 w-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
-              {profile.first_name?.[0]}{profile.last_name?.[0]}
-            </div>
+            {profile.profile_image_url ? (
+              <img 
+                src={profile.profile_image_url} 
+                alt={displayName}
+                className="h-32 w-32 rounded-full object-cover flex-shrink-0 border-4 border-primary/20"
+              />
+            ) : (
+              <div className="h-32 w-32 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
+                {profile.first_name?.[0]}{profile.last_name?.[0]}
+              </div>
+            )}
             
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-2">{displayName}</h1>
@@ -248,16 +256,6 @@ const Profile = () => {
                       </div>
                     </div>
                   )}
-                  
-                  {profile.tax_id && (
-                    <div className="flex items-start gap-3">
-                      <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">JIB/PDV broj</p>
-                        <p>{profile.tax_id}</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 {(profile.business_street || profile.business_city) && (
@@ -279,17 +277,64 @@ const Profile = () => {
             {services.length > 0 && (
               <Card>
                 <CardContent className="pt-6">
-                  <h2 className="text-2xl font-bold flex items-center gap-2 mb-4">
+                  <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
                     <Briefcase className="h-6 w-6 text-primary" />
                     Usluge
                   </h2>
                   
-                  <div className="flex flex-wrap gap-2">
-                    {services.map((service: any) => (
-                      <Badge key={service.service_id} variant="secondary" className="text-base py-2 px-4">
-                        {service.service_categories.name}
-                      </Badge>
-                    ))}
+                  <div className="space-y-4">
+                    {(() => {
+                      // Group services by parent category
+                      const grouped = services.reduce((acc: any, service: any) => {
+                        const category = service.service_categories;
+                        const parentId = category.parent_id || 'main';
+                        if (!acc[parentId]) {
+                          acc[parentId] = [];
+                        }
+                        acc[parentId].push(category);
+                        return acc;
+                      }, {});
+
+                      // Render main categories with their subcategories
+                      return Object.entries(grouped).map(([parentId, items]: [string, any]) => {
+                        const mainCategories = items.filter((cat: any) => !cat.parent_id);
+                        const subCategories = items.filter((cat: any) => cat.parent_id);
+                        
+                        if (mainCategories.length > 0) {
+                          return mainCategories.map((mainCat: any) => {
+                            const subs = services
+                              .map((s: any) => s.service_categories)
+                              .filter((cat: any) => cat.parent_id === mainCat.id);
+                            
+                            return (
+                              <div key={mainCat.id} className="border-l-4 border-primary pl-4">
+                                <h3 className="font-semibold text-lg mb-2">{mainCat.name}</h3>
+                                {subs.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {subs.map((sub: any) => (
+                                      <Badge key={sub.id} variant="secondary" className="text-sm">
+                                        {sub.name}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          });
+                        } else if (subCategories.length > 0) {
+                          return (
+                            <div key={parentId} className="flex flex-wrap gap-2">
+                              {subCategories.map((cat: any) => (
+                                <Badge key={cat.id} variant="secondary" className="text-sm">
+                                  {cat.name}
+                                </Badge>
+                              ))}
+                            </div>
+                          );
+                        }
+                        return null;
+                      });
+                    })()}
                   </div>
                 </CardContent>
               </Card>
@@ -302,6 +347,26 @@ const Profile = () => {
                   <h2 className="text-2xl font-bold mb-4">O meni</h2>
                   <div className="prose prose-slate max-w-none">
                     <p className="whitespace-pre-wrap">{profile.long_description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Gallery */}
+            {gallery.length > 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <h2 className="text-2xl font-bold mb-4">Galerija</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {gallery.map((image: any) => (
+                      <img
+                        key={image.id}
+                        src={image.image_url}
+                        alt="Gallery"
+                        className="w-full h-48 object-cover rounded-lg hover:scale-105 transition-transform cursor-pointer"
+                        onClick={() => window.open(image.image_url, '_blank')}
+                      />
+                    ))}
                   </div>
                 </CardContent>
               </Card>

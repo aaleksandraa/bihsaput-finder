@@ -248,14 +248,14 @@ const Registration = () => {
                         : 'bg-muted/50 text-muted-foreground'
                     }`}
                   >
-                    <div className="flex items-center justify-center h-6 w-6 rounded-full border-2 flex-shrink-0">
+                    <div className="hidden lg:flex items-center justify-center h-6 w-6 rounded-full border-2 flex-shrink-0">
                       {step.number < currentStep ? (
                         <Check className="h-4 w-4" />
                       ) : (
                         <span className="text-sm font-semibold">{step.number}</span>
                       )}
                     </div>
-                    <span className="text-xs sm:text-sm font-medium">{step.title}</span>
+                    <span className="text-sm font-medium">{step.title}</span>
                   </div>
                 ))}
               </div>

@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit, Users, MapPin, Briefcase, Loader2, Settings, Upload } from "lucide-react";
+import { Plus, Trash2, Edit, Users, MapPin, Briefcase, Loader2, Settings, Upload, FileText } from "lucide-react";
 import { CSVImport } from "@/components/admin/CSVImport";
 import { GASettings } from "@/components/admin/GASettings";
+import { BlogManagement } from "@/components/admin/BlogManagement";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -300,7 +301,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 max-w-4xl">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 max-w-4xl">
             <TabsTrigger value="users">
               <Users className="h-4 w-4 mr-2" />
               Korisnici
@@ -315,6 +316,10 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="entities">
               Entiteti
+            </TabsTrigger>
+            <TabsTrigger value="blog">
+              <FileText className="h-4 w-4 mr-2" />
+              Blog
             </TabsTrigger>
             <TabsTrigger value="import">
               <Upload className="h-4 w-4 mr-2" />
@@ -681,6 +686,11 @@ const Admin = () => {
           {/* Import Tab */}
           <TabsContent value="import">
             <CSVImport />
+          </TabsContent>
+
+          {/* Blog Tab */}
+          <TabsContent value="blog">
+            <BlogManagement />
           </TabsContent>
 
           {/* Settings Tab */}

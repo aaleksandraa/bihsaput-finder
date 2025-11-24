@@ -35,6 +35,12 @@ Deno.serve(async (req) => {
       .from('cities')
       .select('id, name, entities(code)');
 
+    // Fetch all published blog posts
+    const { data: blogPosts } = await supabase
+      .from('blog_posts')
+      .select('slug, updated_at')
+      .eq('is_published', true);
+
     const baseUrl = 'https://knjigovodje.ba';
     const now = new Date().toISOString().split('T')[0];
 
@@ -58,6 +64,12 @@ Deno.serve(async (req) => {
     <lastmod>${now}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/blog</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
   </url>`;
 
     // Add profiles
@@ -103,9 +115,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Add blog posts
+    if (blogPosts) {
+      for (const post of blogPosts) {
+        const lastmod = post.updated_at?.split('T')[0] || now;
+        sitemap += `
+  <url>
+    <loc>${baseUrl}/blog/${post.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+      }
+    }
+
     sitemap += '\n</urlset>';
 
-    console.log(`Sitemap generated with ${profiles?.length || 0} profiles, ${categories?.length || 0} categories, ${cities?.length || 0} cities`);
+    console.log(`Sitemap generated with ${profiles?.length || 0} profiles, ${categories?.length || 0} categories, ${cities?.length || 0} cities, ${blogPosts?.length || 0} blog posts`);
 
     return new Response(sitemap, {
       headers: {

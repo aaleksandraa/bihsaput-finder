@@ -28,8 +28,26 @@ const Header = ({ user }: HeaderProps) => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [heroGradient, setHeroGradient] = useState("");
 
   useEffect(() => {
+    // Generate random darker gradient for mobile menu
+    const gradients = [
+      "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)", // Blue to purple
+      "linear-gradient(135deg, #434343 0%, #000000 50%, #434343 100%)", // Dark gray to black
+      "linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%)", // Deep blue
+      "linear-gradient(135deg, #283c86 0%, #45a247 50%, #283c86 100%)", // Navy to forest green
+      "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #0f2027 100%)", // Dark teal
+      "linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #2c3e50 100%)", // Dark slate to blue
+      "linear-gradient(135deg, #232526 0%, #414345 50%, #232526 100%)", // Charcoal
+      "linear-gradient(135deg, #134e5e 0%, #71b280 50%, #134e5e 100%)", // Ocean teal to green
+      "linear-gradient(135deg, #360033 0%, #0b8793 50%, #360033 100%)", // Deep purple to teal
+      "linear-gradient(135deg, #1f4037 0%, #99f2c8 50%, #1f4037 100%)", // Forest to mint
+    ];
+    
+    const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+    setHeroGradient(randomGradient);
+
     if (user) {
       checkAdminStatus();
     } else {
@@ -137,7 +155,11 @@ const Header = ({ user }: HeaderProps) => {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[320px] bg-transparent backdrop-blur-md border-white/20 text-white">
+            <SheetContent 
+              side="right" 
+              className="w-[280px] sm:w-[320px] border-white/20 text-white animated-gradient"
+              style={{ background: heroGradient || "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)" }}
+            >
               <SheetHeader className="text-left mb-6">
                 <SheetTitle className="text-xl font-bold text-white">Meni</SheetTitle>
               </SheetHeader>

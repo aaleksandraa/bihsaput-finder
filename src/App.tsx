@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import MapView from "./pages/MapView";
 import Search from "./pages/Search";
+import ServiceCategory from "./pages/ServiceCategory";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/mapa" element={<MapView />} />
           <Route path="/search" element={<Search />} />
+          <Route path="/usluge/:categoryId" element={<ServiceCategory />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/registracija" element={<Registration />} />

@@ -35,7 +35,7 @@ const Search = () => {
 
   const fetchProfiles = async (filters: any) => {
     setLoading(true);
-    // Query profiles excluding sensitive fields for public access
+    // Query only necessary fields for profile cards and distance calculation
     let query = supabase
       .from('profiles')
       .select(`
@@ -46,26 +46,16 @@ const Search = () => {
         business_type,
         business_city_id,
         short_description,
-        long_description,
         profile_image_url,
         slug,
+        email,
+        phone,
         website,
         years_experience,
         works_online,
-        works_locally_only,
         has_physical_office,
         latitude,
-        longitude,
-        professional_organizations,
-        linkedin_url,
-        facebook_url,
-        instagram_url,
-        is_active,
-        registration_completed,
-        created_at,
-        updated_at,
-        business_city:cities!profiles_business_city_id_fkey(name, entity_id),
-        profile_services(service_id, service_categories(name))
+        longitude
       `)
       .eq('is_active', true)
       .eq('registration_completed', true);
@@ -82,12 +72,20 @@ const Search = () => {
         .single();
       
       if (entityData) {
-        query = query.or(`personal_city.entity_id.eq.${entityData.id},business_city.entity_id.eq.${entityData.id}`);
+        const { data: cities } = await supabase
+          .from('cities')
+          .select('id')
+          .eq('entity_id', entityData.id);
+        
+        if (cities && cities.length > 0) {
+          const cityIds = cities.map(c => c.id);
+          query = query.in('business_city_id', cityIds);
+        }
       }
     }
 
     if (filters?.city && filters.city !== 'all' && filters.city !== '') {
-      query = query.or(`personal_city_id.eq.${filters.city},business_city_id.eq.${filters.city}`);
+      query = query.eq('business_city_id', filters.city);
     }
 
     const { data, error } = await query;
@@ -97,10 +95,15 @@ const Search = () => {
 
       // Filter by services if selected
       if (filters?.services && filters.services.length > 0) {
-        filteredProfiles = data.filter((profile: any) => {
-          const profileServiceIds = profile.profile_services?.map((ps: any) => ps.service_id) || [];
-          return filters.services.some((serviceId: string) => profileServiceIds.includes(serviceId));
-        });
+        const { data: profileServices } = await supabase
+          .from('profile_services')
+          .select('profile_id')
+          .in('service_id', filters.services);
+        
+        if (profileServices) {
+          const profileIds = profileServices.map(ps => ps.profile_id);
+          filteredProfiles = filteredProfiles.filter(profile => profileIds.includes(profile.id));
+        }
       }
 
       // Sort by distance if nearMe is enabled

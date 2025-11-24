@@ -173,6 +173,7 @@ const MapView = () => {
 
   const fetchProfiles = async (filters?: any) => {
     setLoading(true);
+    // Query only essential fields for map markers and popups
     let query = supabase
       .from('profiles')
       .select(`
@@ -180,27 +181,13 @@ const MapView = () => {
         first_name,
         last_name,
         company_name,
-        business_type,
-        business_city_id,
         short_description,
-        long_description,
         profile_image_url,
         slug,
-        website,
-        years_experience,
-        works_online,
-        works_locally_only,
-        has_physical_office,
+        email,
+        phone,
         latitude,
-        longitude,
-        professional_organizations,
-        linkedin_url,
-        facebook_url,
-        instagram_url,
-        is_active,
-        registration_completed,
-        created_at,
-        updated_at
+        longitude
       `)
       .eq('is_active', true)
       .eq('registration_completed', true)

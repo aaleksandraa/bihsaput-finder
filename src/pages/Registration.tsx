@@ -216,68 +216,72 @@ const Registration = () => {
     <div className="min-h-screen bg-background">
       <Header user={user} />
       
-      <div className="container py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Registracija profila</h1>
-            <p className="text-muted-foreground">
+      <div className="container px-4 py-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">Registracija profila</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Korak {currentStep} od {STEPS.length}: {STEPS[currentStep - 1].title}
             </p>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <Progress value={progress} className="h-2" />
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6">
-            <div className="md:col-span-1 space-y-2">
-              {STEPS.map((step) => (
-                <div
-                  key={step.number}
-                  className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                    step.number === currentStep
-                      ? 'bg-primary text-primary-foreground'
-                      : step.number < currentStep
-                      ? 'bg-success/10 text-success'
-                      : 'bg-muted/50 text-muted-foreground'
-                  }`}
-                >
-                  <div className="flex items-center justify-center h-6 w-6 rounded-full border-2 flex-shrink-0">
-                    {step.number < currentStep ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      <span className="text-sm font-semibold">{step.number}</span>
-                    )}
+          <div className="grid lg:grid-cols-4 gap-4 lg:gap-6">
+            {/* Steps sidebar - horizontal scroll on mobile, vertical on desktop */}
+            <div className="lg:col-span-1">
+              <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
+                {STEPS.map((step) => (
+                  <div
+                    key={step.number}
+                    className={`flex items-center gap-2 p-2 rounded-lg transition-colors whitespace-nowrap flex-shrink-0 ${
+                      step.number === currentStep
+                        ? 'bg-primary text-primary-foreground'
+                        : step.number < currentStep
+                        ? 'bg-success/10 text-success'
+                        : 'bg-muted/50 text-muted-foreground'
+                    }`}
+                  >
+                    <div className="flex items-center justify-center h-6 w-6 rounded-full border-2 flex-shrink-0">
+                      {step.number < currentStep ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <span className="text-sm font-semibold">{step.number}</span>
+                      )}
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium">{step.title}</span>
                   </div>
-                  <span className="text-sm font-medium hidden md:inline">{step.title}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            <div className="md:col-span-3">
+            <div className="lg:col-span-3">
               <Card>
                 <CardHeader>
-                  <CardTitle>{STEPS[currentStep - 1].title}</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-xl sm:text-2xl">{STEPS[currentStep - 1].title}</CardTitle>
+                  <CardDescription className="text-sm">
                     Popunite informacije za ovaj korak
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <CurrentStepComponent data={formData} onChange={setFormData} />
 
-                  <div className="flex justify-between mt-8 pt-6 border-t">
+                  <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 mt-6 sm:mt-8 pt-6 border-t">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={handleBack}
                       disabled={currentStep === 1}
+                      className="w-full sm:w-auto"
                     >
                       <ChevronLeft className="h-4 w-4 mr-2" />
                       Nazad
                     </Button>
 
                     {currentStep < STEPS.length ? (
-                      <Button type="button" onClick={handleNext} className="bg-hero-gradient">
+                      <Button type="button" onClick={handleNext} className="bg-hero-gradient w-full sm:w-auto">
                         Dalje
                         <ChevronRight className="h-4 w-4 ml-2" />
                       </Button>
@@ -286,7 +290,7 @@ const Registration = () => {
                         type="button"
                         onClick={handleSubmit}
                         disabled={isLoading}
-                        className="bg-success-gradient"
+                        className="bg-success-gradient w-full sm:w-auto"
                       >
                         {isLoading ? "Kreiranje..." : "Završi registraciju"}
                         <Check className="h-4 w-4 ml-2" />

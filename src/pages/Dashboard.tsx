@@ -131,14 +131,14 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header user={user} />
-      <div className="container py-8">
+      <div className="container px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold">
               Uređivanje profila
             </h1>
             {profile.slug && (
-              <Button variant="outline" onClick={() => navigate(`/profil/${profile.slug}`)}>
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => navigate(`/profil/${profile.slug}`)}>
                 Pogledaj javni profil
               </Button>
             )}
@@ -156,38 +156,38 @@ const Dashboard = () => {
           )}
 
           <Tabs defaultValue="personal" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-              <TabsTrigger value="personal">
-                <User className="h-4 w-4 mr-2" />
-                Lični
+            <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1 p-1">
+              <TabsTrigger value="personal" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Lični</span>
               </TabsTrigger>
-              <TabsTrigger value="business">
-                <Briefcase className="h-4 w-4 mr-2" />
-                Poslovni
+              <TabsTrigger value="business" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Poslovni</span>
               </TabsTrigger>
-              <TabsTrigger value="services">
-                <Briefcase className="h-4 w-4 mr-2" />
-                Usluge
+              <TabsTrigger value="services" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Usluge</span>
               </TabsTrigger>
-              <TabsTrigger value="hours">
-                <Clock className="h-4 w-4 mr-2" />
-                Radno vrijeme
+              <TabsTrigger value="hours" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Radno vrijeme</span>
               </TabsTrigger>
-              <TabsTrigger value="location">
-                <MapPin className="h-4 w-4 mr-2" />
-                Lokacija
+              <TabsTrigger value="location" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Lokacija</span>
               </TabsTrigger>
-              <TabsTrigger value="social">
-                <Globe className="h-4 w-4 mr-2" />
-                Društvene mreže
+              <TabsTrigger value="social" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <Globe className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Društvene mreže</span>
               </TabsTrigger>
-              <TabsTrigger value="descriptions">
-                <FileText className="h-4 w-4 mr-2" />
-                Opisi
+              <TabsTrigger value="descriptions" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Opisi</span>
               </TabsTrigger>
-              <TabsTrigger value="media">
-                <ImageIcon className="h-4 w-4 mr-2" />
-                Slike
+              <TabsTrigger value="media" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <ImageIcon className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Slike</span>
               </TabsTrigger>
             </TabsList>
 

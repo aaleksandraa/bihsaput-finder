@@ -4,6 +4,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Step2Props {
   data: any;
@@ -14,6 +19,7 @@ const Step2BusinessData = ({ data, onChange }: Step2Props) => {
   const [entities, setEntities] = useState<any[]>([]);
   const [cantons, setCantons] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
+  const [openCityCombobox, setOpenCityCombobox] = useState(false);
 
   useEffect(() => {
     fetchEntities();
@@ -157,18 +163,50 @@ const Step2BusinessData = ({ data, onChange }: Step2Props) => {
 
               <div className="space-y-2">
                 <Label htmlFor="businessCity">Grad *</Label>
-                <Select value={data.business_city_id} onValueChange={(value) => handleChange('business_city_id', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Odaberite" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cities.map((city) => (
-                      <SelectItem key={city.id} value={city.id}>
-                        {city.name} ({city.postal_code})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={openCityCombobox} onOpenChange={setOpenCityCombobox}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openCityCombobox}
+                      className="w-full justify-between"
+                    >
+                      {data.business_city_id
+                        ? cities.find((city) => city.id === data.business_city_id)?.name +
+                          " (" + cities.find((city) => city.id === data.business_city_id)?.postal_code + ")"
+                        : "Pretražite grad ili poštanski broj..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Pretražite grad ili poštanski broj..." />
+                      <CommandList>
+                        <CommandEmpty>Grad nije pronađen.</CommandEmpty>
+                        <CommandGroup>
+                          {cities.map((city) => (
+                            <CommandItem
+                              key={city.id}
+                              value={`${city.name} ${city.postal_code}`}
+                              onSelect={() => {
+                                handleChange('business_city_id', city.id);
+                                setOpenCityCombobox(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  data.business_city_id === city.id ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {city.name} ({city.postal_code})
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           </div>

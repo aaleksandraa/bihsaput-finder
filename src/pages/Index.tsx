@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
 import ProfileCard from "@/components/ProfileCard";
+import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Search, TrendingUp, Briefcase, ChevronRight } from "lucide-react";
@@ -86,6 +87,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Pronađite certificiranog knjigovođu u BiH"
+        description="Najveća baza knjigovođa, računovođa i revizora u Bosni i Hercegovini. Pretražite po lokaciji, uslugama i dostupnosti. Brz i siguran kontakt sa profesionalcima."
+        keywords="knjigovođa, računovođa, revizor, bosna i hercegovina, bih, računovodstvo, knjigovodstvene usluge"
+        url="/"
+      />
       <Header user={user} />
       
       {/* Hero Section */}

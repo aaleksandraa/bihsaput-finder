@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
 import ProfileCard from "@/components/ProfileCard";
+import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { MapPin, ArrowLeft } from "lucide-react";
 
@@ -131,9 +132,19 @@ const Search = () => {
   };
 
   const hasActiveFilters = searchParams.get('q') || searchParams.get('entity') || searchParams.has('service');
+  
+  const searchTerm = searchParams.get('q') || '';
+  const seoTitle = searchTerm ? `Pretraga: ${searchTerm}` : 'Pretraga knjigovođa';
+  const seoDescription = `Pronađite certificiranog knjigovođu u Bosni i Hercegovini. ${profiles.length} rezultata pretrage. Filtrirajte po lokaciji, uslugama i dostupnosti.`;
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+        keywords="pretraga knjigovođa, računovođa bih, računovodstvene usluge, pretraga"
+        url={`/search?${searchParams.toString()}`}
+      />
       <Header user={user} />
 
       {/* Search Section */}

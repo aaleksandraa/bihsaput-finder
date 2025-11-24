@@ -112,8 +112,8 @@ const ServiceCategory = () => {
 
           {subcategories.length > 0 ? (
             <>
-              <h2 className="text-xl font-semibold mb-4">Izaberite specifičnu uslugu</h2>
-              <div className="grid md:grid-cols-2 gap-4">
+              <h2 className="text-xl font-semibold mb-6">Izaberite specifičnu uslugu</h2>
+              <div className="grid md:grid-cols-2 gap-5">
                 {subcategories.map((sub) => (
                   <Link key={sub.id} to={`/search?service=${sub.id}`}>
                     <Card className="h-full hover:shadow-lg transition-all hover-scale cursor-pointer">
@@ -148,7 +148,7 @@ const ServiceCategory = () => {
 
           <div className="mt-8">
             <Link to={`/search?service=${category.id}`}>
-              <Button variant="outline" size="lg" className="w-full">
+              <Button variant="outline" size="lg" className="w-full h-auto py-3 px-4 text-center leading-relaxed">
                 Pregledaj sve knjigovođe iz kategorije "{category.name}"
               </Button>
             </Link>

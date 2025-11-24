@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { SEO } from "@/components/SEO";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,103 +6,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  featured_image_url: string | null;
-  published_at: string;
-  blog_categories?: { name: string; slug: string } | null;
-}
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-interface Tag {
-  id: string;
-  name: string;
-  slug: string;
-}
+import { useBlogPosts, useBlogCategories, useBlogTags } from "@/hooks/useBlog";
 
 export default function Blog() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  
   const selectedCategory = searchParams.get("category");
   const selectedTag = searchParams.get("tag");
 
-  useEffect(() => {
-    fetchCategories();
-    fetchTags();
-  }, []);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [selectedCategory, selectedTag]);
-
-  const fetchCategories = async () => {
-    const { data } = await supabase
-      .from("blog_categories")
-      .select("*")
-      .order("name");
-    if (data) setCategories(data);
-  };
-
-  const fetchTags = async () => {
-    const { data } = await supabase
-      .from("blog_tags")
-      .select("*")
-      .order("name");
-    if (data) setTags(data);
-  };
-
-  const fetchPosts = async () => {
-    setLoading(true);
-    let query = supabase
-      .from("blog_posts")
-      .select("id, title, slug, excerpt, featured_image_url, published_at, blog_categories(name, slug)")
-      .eq("is_published", true)
-      .order("published_at", { ascending: false });
-
-    if (selectedCategory) {
-      const category = categories.find(c => c.slug === selectedCategory);
-      if (category) {
-        query = query.eq("category_id", category.id);
-      }
-    }
-
-    if (selectedTag) {
-      const tag = tags.find(t => t.slug === selectedTag);
-      if (tag) {
-        const { data: postTags } = await supabase
-          .from("blog_post_tags")
-          .select("blog_post_id")
-          .eq("blog_tag_id", tag.id);
-        
-        if (postTags) {
-          const postIds = postTags.map(pt => pt.blog_post_id);
-          query = query.in("id", postIds);
-        }
-      }
-    }
-
-    const { data, error } = await query;
-
-    if (error) {
-      console.error("Error fetching blog posts:", error);
-    } else {
-      setPosts(data || []);
-    }
-    setLoading(false);
-  };
+  const { data: posts = [], isLoading: postsLoading } = useBlogPosts({
+    categorySlug: selectedCategory || undefined,
+    tagSlug: selectedTag || undefined,
+  });
+  
+  const { data: categories = [] } = useBlogCategories();
+  const { data: tags = [] } = useBlogTags();
 
   const clearFilters = () => {
     setSearchParams({});
@@ -178,7 +94,7 @@ export default function Blog() {
               )}
             </div>
 
-            {loading ? (
+            {postsLoading ? (
               <div className="space-y-6">
                 {[1, 2, 3].map((i) => (
                   <Card key={i}>

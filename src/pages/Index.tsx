@@ -9,13 +9,54 @@ import { BlogSection } from "@/components/BlogSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Search, TrendingUp, Briefcase, ChevronRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [mainCategories, setMainCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const [heroGradient, setHeroGradient] = useState("");
+
+  const { data: profiles = [], isLoading: profilesLoading } = useQuery({
+    queryKey: ["featured-profiles"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          company_name,
+          business_type,
+          short_description,
+          profile_image_url,
+          slug,
+          email,
+          phone,
+          website,
+          years_experience,
+          works_online,
+          has_physical_office
+        `)
+        .eq('is_active', true)
+        .eq('registration_completed', true)
+        .limit(12);
+      
+      return data || [];
+    },
+  });
+
+  const { data: mainCategories = [] } = useQuery({
+    queryKey: ["main-service-categories"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('service_categories')
+        .select('*')
+        .is('parent_id', null)
+        .order('name')
+        .limit(6);
+      
+      return data || [];
+    },
+  });
 
   useEffect(() => {
     // Generate random gradient on mount
@@ -45,57 +86,6 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  useEffect(() => {
-    fetchProfiles();
-    fetchMainCategories();
-  }, []);
-
-  const fetchProfiles = async () => {
-    setLoading(true);
-    // Fetch only necessary fields for profile cards
-    let query = supabase
-      .from('profiles')
-      .select(`
-        id,
-        first_name,
-        last_name,
-        company_name,
-        business_type,
-        short_description,
-        profile_image_url,
-        slug,
-        email,
-        phone,
-        website,
-        years_experience,
-        works_online,
-        has_physical_office
-      `)
-      .eq('is_active', true)
-      .eq('registration_completed', true)
-      .limit(12);
-
-    const { data, error } = await query;
-    setLoading(false);
-
-    if (!error && data) {
-      setProfiles(data);
-    }
-  };
-
-  const fetchMainCategories = async () => {
-    const { data } = await supabase
-      .from('service_categories')
-      .select('*')
-      .is('parent_id', null)
-      .order('name')
-      .limit(6);
-
-    if (data) {
-      setMainCategories(data);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -252,7 +242,7 @@ const Index = () => {
             </p>
           </div>
 
-          {loading ? (
+          {profilesLoading ? (
             <div className="text-center py-20">
               <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
               <p className="mt-4 text-muted-foreground">Učitavanje profila...</p>

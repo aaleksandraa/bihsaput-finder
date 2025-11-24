@@ -20,6 +20,15 @@ const Admin = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [cities, setCities] = useState<any[]>([]);
   const [serviceCategories, setServiceCategories] = useState<any[]>([]);
+  const [entities, setEntities] = useState<any[]>([]);
+  const [cantons, setCantons] = useState<any[]>([]);
+  
+  // Form states
+  const [newCity, setNewCity] = useState({ name: '', postal_code: '', entity_id: '', canton_id: '' });
+  const [newEntity, setNewEntity] = useState({ name: '', code: '' });
+  const [newCanton, setNewCanton] = useState({ name: '', entity_id: '' });
+  const [newService, setNewService] = useState({ name: '', description: '', parent_id: '' });
+  const [editingService, setEditingService] = useState<any>(null);
 
   useEffect(() => {
     checkAdmin();
@@ -61,10 +70,24 @@ const Admin = () => {
       .order('created_at', { ascending: false });
     if (profilesData) setProfiles(profilesData);
 
+    // Fetch entities
+    const { data: entitiesData } = await supabase
+      .from('entities')
+      .select('*')
+      .order('name');
+    if (entitiesData) setEntities(entitiesData);
+
+    // Fetch cantons
+    const { data: cantonsData } = await supabase
+      .from('cantons')
+      .select('*, entities(name)')
+      .order('name');
+    if (cantonsData) setCantons(cantonsData);
+
     // Fetch cities
     const { data: citiesData } = await supabase
       .from('cities')
-      .select('*, entities(name)')
+      .select('*, entities(name), cantons(name)')
       .order('name');
     if (citiesData) setCities(citiesData);
 
@@ -103,6 +126,150 @@ const Admin = () => {
     }
   };
 
+  // Entity Management
+  const handleAddEntity = async () => {
+    if (!newEntity.name || !newEntity.code) {
+      toast.error("Unesite sve podatke");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('entities')
+      .insert([{ name: newEntity.name, code: newEntity.code as 'fbih' | 'rs' | 'brcko' }]);
+
+    if (error) {
+      toast.error("Greška pri dodavanju");
+    } else {
+      toast.success("Entitet uspješno dodat");
+      setNewEntity({ name: '', code: '' });
+      fetchData();
+    }
+  };
+
+  // Canton Management
+  const handleAddCanton = async () => {
+    if (!newCanton.name || !newCanton.entity_id) {
+      toast.error("Unesite sve podatke");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('cantons')
+      .insert([{ name: newCanton.name, entity_id: newCanton.entity_id }]);
+
+    if (error) {
+      toast.error("Greška pri dodavanju");
+    } else {
+      toast.success("Kanton uspješno dodat");
+      setNewCanton({ name: '', entity_id: '' });
+      fetchData();
+    }
+  };
+
+  // City Management
+  const handleAddCity = async () => {
+    if (!newCity.name || !newCity.postal_code || !newCity.entity_id) {
+      toast.error("Unesite sve podatke");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('cities')
+      .insert([{
+        name: newCity.name,
+        postal_code: newCity.postal_code,
+        entity_id: newCity.entity_id,
+        canton_id: newCity.canton_id || null
+      }]);
+
+    if (error) {
+      toast.error("Greška pri dodavanju");
+    } else {
+      toast.success("Grad uspješno dodat");
+      setNewCity({ name: '', postal_code: '', entity_id: '', canton_id: '' });
+      fetchData();
+    }
+  };
+
+  const handleDeleteCity = async (cityId: string) => {
+    if (!confirm("Da li ste sigurni?")) return;
+
+    const { error } = await supabase
+      .from('cities')
+      .delete()
+      .eq('id', cityId);
+
+    if (error) {
+      toast.error("Greška pri brisanju");
+    } else {
+      toast.success("Grad uspješno obrisan");
+      fetchData();
+    }
+  };
+
+  // Service Category Management
+  const handleAddService = async () => {
+    if (!newService.name) {
+      toast.error("Unesite naziv usluge");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('service_categories')
+      .insert([{
+        name: newService.name,
+        description: newService.description,
+        parent_id: newService.parent_id || null
+      }]);
+
+    if (error) {
+      toast.error("Greška pri dodavanju");
+    } else {
+      toast.success("Kategorija uspješno dodana");
+      setNewService({ name: '', description: '', parent_id: '' });
+      fetchData();
+    }
+  };
+
+  const handleUpdateService = async () => {
+    if (!editingService || !editingService.name) {
+      toast.error("Unesite naziv usluge");
+      return;
+    }
+
+    const { error } = await supabase
+      .from('service_categories')
+      .update({
+        name: editingService.name,
+        description: editingService.description
+      })
+      .eq('id', editingService.id);
+
+    if (error) {
+      toast.error("Greška pri ažuriranju");
+    } else {
+      toast.success("Kategorija uspješno ažurirana");
+      setEditingService(null);
+      fetchData();
+    }
+  };
+
+  const handleDeleteService = async (serviceId: string) => {
+    if (!confirm("Da li ste sigurni? Ovo će obrisati i sve podkategorije.")) return;
+
+    const { error } = await supabase
+      .from('service_categories')
+      .delete()
+      .eq('id', serviceId);
+
+    if (error) {
+      toast.error("Greška pri brisanju");
+    } else {
+      toast.success("Kategorija uspješno obrisana");
+      fetchData();
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -131,7 +298,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl">
             <TabsTrigger value="users">
               <Users className="h-4 w-4 mr-2" />
               Korisnici
@@ -143,6 +310,9 @@ const Admin = () => {
             <TabsTrigger value="services">
               <Briefcase className="h-4 w-4 mr-2" />
               Usluge
+            </TabsTrigger>
+            <TabsTrigger value="entities">
+              Entiteti
             </TabsTrigger>
           </TabsList>
 
@@ -198,17 +368,105 @@ const Admin = () => {
 
           {/* Locations Tab */}
           <TabsContent value="locations" className="space-y-4">
+            {/* Add City Form */}
             <Card>
               <CardHeader>
-                <CardTitle>Lokacije</CardTitle>
-                <CardDescription>
-                  Upravljajte gradovima i lokacijama
-                </CardDescription>
+                <CardTitle>Dodaj novi grad</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  💡 Dodavanje i uređivanje gradova će biti dostupno uskoro. Trenutno možete vidjeti postojeće lokacije.
-                </p>
+                <div className="grid gap-4">
+                  <div>
+                    <Label>Naziv grada</Label>
+                    <Input
+                      value={newCity.name}
+                      onChange={(e) => setNewCity({ ...newCity, name: e.target.value })}
+                      placeholder="Npr. Sarajevo"
+                    />
+                  </div>
+                  <div>
+                    <Label>Poštanski broj</Label>
+                    <Input
+                      value={newCity.postal_code}
+                      onChange={(e) => setNewCity({ ...newCity, postal_code: e.target.value })}
+                      placeholder="Npr. 71000"
+                    />
+                  </div>
+                  <div>
+                    <Label>Entitet</Label>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newCity.entity_id}
+                      onChange={(e) => setNewCity({ ...newCity, entity_id: e.target.value })}
+                    >
+                      <option value="">Izaberite entitet</option>
+                      {entities.map((entity) => (
+                        <option key={entity.id} value={entity.id}>{entity.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Kanton (opciono)</Label>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newCity.canton_id}
+                      onChange={(e) => setNewCity({ ...newCity, canton_id: e.target.value })}
+                    >
+                      <option value="">Bez kantona</option>
+                      {cantons.filter(c => c.entity_id === newCity.entity_id).map((canton) => (
+                        <option key={canton.id} value={canton.id}>{canton.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button onClick={handleAddCity}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Dodaj grad
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Add Canton Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Dodaj novi kanton</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div>
+                    <Label>Naziv kantona</Label>
+                    <Input
+                      value={newCanton.name}
+                      onChange={(e) => setNewCanton({ ...newCanton, name: e.target.value })}
+                      placeholder="Npr. Sarajevski kanton"
+                    />
+                  </div>
+                  <div>
+                    <Label>Entitet</Label>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newCanton.entity_id}
+                      onChange={(e) => setNewCanton({ ...newCanton, entity_id: e.target.value })}
+                    >
+                      <option value="">Izaberite entitet</option>
+                      {entities.map((entity) => (
+                        <option key={entity.id} value={entity.id}>{entity.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button onClick={handleAddCanton}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Dodaj kanton
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Cities List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Gradovi ({cities.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
                   {cities.map((city) => (
                     <div key={city.id} className="flex items-center justify-between p-3 border rounded">
@@ -216,8 +474,16 @@ const Admin = () => {
                         <p className="font-medium">{city.name}</p>
                         <p className="text-sm text-muted-foreground">
                           {city.postal_code} | {city.entities?.name}
+                          {city.cantons && ` | ${city.cantons.name}`}
                         </p>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeleteCity(city.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -227,24 +493,174 @@ const Admin = () => {
 
           {/* Services Tab */}
           <TabsContent value="services" className="space-y-4">
+            {/* Add Service Form */}
             <Card>
               <CardHeader>
-                <CardTitle>Kategorije usluga</CardTitle>
-                <CardDescription>
-                  Upravljajte kategorijama i podkategorijama usluga
-                </CardDescription>
+                <CardTitle>Dodaj novu kategoriju</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  💡 Dodavanje i uređivanje kategorija usluga će biti dostupno uskoro.
-                </p>
+                <div className="grid gap-4">
+                  <div>
+                    <Label>Naziv kategorije</Label>
+                    <Input
+                      value={newService.name}
+                      onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+                      placeholder="Npr. Knjigovodstvene usluge"
+                    />
+                  </div>
+                  <div>
+                    <Label>Opis</Label>
+                    <Textarea
+                      value={newService.description}
+                      onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+                      placeholder="Kratak opis kategorije"
+                    />
+                  </div>
+                  <div>
+                    <Label>Nadkategorija (opciono - za podkategorije)</Label>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newService.parent_id}
+                      onChange={(e) => setNewService({ ...newService, parent_id: e.target.value })}
+                    >
+                      <option value="">Glavna kategorija</option>
+                      {serviceCategories.filter(s => !s.parent_id).map((service) => (
+                        <option key={service.id} value={service.id}>{service.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button onClick={handleAddService}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Dodaj kategoriju
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Services List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Kategorije usluga ({serviceCategories.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {serviceCategories.map((category) => (
-                    <div key={category.id} className="p-3 border rounded">
-                      <p className="font-medium">{category.name}</p>
-                      {category.description && (
-                        <p className="text-sm text-muted-foreground">{category.description}</p>
-                      )}
+                  {serviceCategories.filter(s => !s.parent_id).map((category) => (
+                    <div key={category.id} className="border rounded">
+                      <div className="p-3">
+                        {editingService?.id === category.id ? (
+                          <div className="space-y-2">
+                            <Input
+                              value={editingService.name}
+                              onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+                            />
+                            <Textarea
+                              value={editingService.description || ''}
+                              onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                            />
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={handleUpdateService}>Sačuvaj</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setEditingService(null)}>Otkaži</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="font-medium">{category.name}</p>
+                              {category.description && (
+                                <p className="text-sm text-muted-foreground">{category.description}</p>
+                              )}
+                              {/* Subcategories */}
+                              {serviceCategories.filter(s => s.parent_id === category.id).length > 0 && (
+                                <div className="mt-2 ml-4 space-y-1">
+                                  {serviceCategories.filter(s => s.parent_id === category.id).map((sub) => (
+                                    <div key={sub.id} className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
+                                      <span>{sub.name}</span>
+                                      <div className="flex gap-1">
+                                        <Button size="sm" variant="ghost" onClick={() => setEditingService(sub)}>
+                                          <Edit className="h-3 w-3" />
+                                        </Button>
+                                        <Button size="sm" variant="ghost" onClick={() => handleDeleteService(sub.id)}>
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex gap-1">
+                              <Button size="sm" variant="ghost" onClick={() => setEditingService(category)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => handleDeleteService(category.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Entities Tab */}
+          <TabsContent value="entities" className="space-y-4">
+            {/* Add Entity Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Dodaj novi entitet</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  <div>
+                    <Label>Naziv entiteta</Label>
+                    <Input
+                      value={newEntity.name}
+                      onChange={(e) => setNewEntity({ ...newEntity, name: e.target.value })}
+                      placeholder="Npr. Federacija BiH"
+                    />
+                  </div>
+                  <div>
+                    <Label>Kod</Label>
+                    <select
+                      className="w-full p-2 border rounded"
+                      value={newEntity.code}
+                      onChange={(e) => setNewEntity({ ...newEntity, code: e.target.value })}
+                    >
+                      <option value="">Izaberite kod</option>
+                      <option value="fbih">fbih</option>
+                      <option value="rs">rs</option>
+                      <option value="brcko">brcko</option>
+                    </select>
+                  </div>
+                  <Button onClick={handleAddEntity}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Dodaj entitet
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Entities & Cantons List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Entiteti i Kantoni</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {entities.map((entity) => (
+                    <div key={entity.id} className="border rounded p-3">
+                      <p className="font-bold">{entity.name} ({entity.code})</p>
+                      <div className="mt-2 ml-4 space-y-1">
+                        {cantons.filter(c => c.entity_id === entity.id).map((canton) => (
+                          <div key={canton.id} className="text-sm p-2 bg-muted/50 rounded">
+                            {canton.name}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>

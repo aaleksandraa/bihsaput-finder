@@ -23,17 +23,45 @@ const ProfileMap = ({ latitude, longitude, name, googleMapsUrl }: ProfileMapProp
 
     // Initialize map only once
     if (!mapInstanceRef.current) {
-      // Fix default icon
-      const DefaultIcon = L.icon({
-        iconUrl: markerIcon,
-        iconRetinaUrl: markerIcon2x,
-        shadowUrl: markerShadow,
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
+      // Create custom modern marker icon
+      const customIcon = L.divIcon({
+        className: 'custom-marker',
+        html: `
+          <div style="
+            position: relative;
+            width: 40px;
+            height: 40px;
+          ">
+            <div style="
+              position: absolute;
+              top: 0;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 32px;
+              height: 32px;
+              background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
+              border-radius: 50% 50% 50% 0;
+              transform: translateX(-50%) rotate(-45deg);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+              border: 3px solid white;
+            "></div>
+            <div style="
+              position: absolute;
+              top: 6px;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 12px;
+              height: 12px;
+              background: white;
+              border-radius: 50%;
+              z-index: 1;
+            "></div>
+          </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40]
       });
-      L.Marker.prototype.options.icon = DefaultIcon;
 
       // Create map
       mapInstanceRef.current = L.map(mapRef.current).setView([latitude, longitude], 15);
@@ -43,10 +71,35 @@ const ProfileMap = ({ latitude, longitude, name, googleMapsUrl }: ProfileMapProp
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(mapInstanceRef.current);
 
-      // Add marker
-      L.marker([latitude, longitude])
-        .addTo(mapInstanceRef.current)
-        .bindPopup(name);
+      // Add marker with custom icon
+      const marker = L.marker([latitude, longitude], { icon: customIcon })
+        .addTo(mapInstanceRef.current);
+
+      // Create modern popup content
+      const popupContent = `
+        <div style="
+          padding: 12px;
+          font-family: system-ui, -apple-system, sans-serif;
+        ">
+          <div style="
+            font-weight: 600;
+            font-size: 16px;
+            color: hsl(222.2 47.4% 11.2%);
+            margin-bottom: 8px;
+          ">${name}</div>
+          <div style="
+            display: inline-block;
+            padding: 4px 8px;
+            background: hsl(214.3 31.8% 91.4%);
+            color: hsl(222.2 47.4% 11.2%);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+          ">Lokacija</div>
+        </div>
+      `;
+      
+      marker.bindPopup(popupContent);
     }
 
     // Cleanup

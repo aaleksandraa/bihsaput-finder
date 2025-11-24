@@ -370,7 +370,7 @@ const Profile = () => {
               {profile.long_description && (
                 <Card>
                   <CardContent className="pt-6">
-                    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                    <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap break-words overflow-wrap-anywhere">
                       {profile.long_description}
                     </p>
                   </CardContent>

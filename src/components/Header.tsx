@@ -137,21 +137,21 @@ const Header = ({ user }: HeaderProps) => {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+            <SheetContent side="right" className="w-[280px] sm:w-[320px] bg-transparent backdrop-blur-md border-white/20 text-white">
               <SheetHeader className="text-left mb-6">
-                <SheetTitle className="text-xl font-bold">Meni</SheetTitle>
+                <SheetTitle className="text-xl font-bold text-white">Meni</SheetTitle>
               </SheetHeader>
               
               <div className="flex flex-col gap-3">
                 <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start gap-2" size="lg">
+                  <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10" size="lg">
                     <Home className="h-5 w-5" />
                     Početna
                   </Button>
                 </Link>
                 
                 <Link to="/search" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start gap-2" size="lg">
+                  <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10" size="lg">
                     <Search className="h-5 w-5" />
                     Pretraga
                   </Button>
@@ -161,7 +161,7 @@ const Header = ({ user }: HeaderProps) => {
                   <>
                     {isAdmin && (
                       <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start gap-2" size="lg">
+                        <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10" size="lg">
                           <Shield className="h-5 w-5" />
                           Admin Panel
                         </Button>
@@ -169,17 +169,17 @@ const Header = ({ user }: HeaderProps) => {
                     )}
                     
                     <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2" size="lg">
+                      <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10" size="lg">
                         <User className="h-5 w-5" />
                         Moj profil
                       </Button>
                     </Link>
                     
-                    <div className="my-2 border-t" />
+                    <div className="my-2 border-t border-white/20" />
                     
                     <Button 
                       variant="ghost" 
-                      className="w-full justify-start gap-2 text-destructive hover:text-destructive" 
+                      className="w-full justify-start gap-2 text-white hover:bg-white/10" 
                       size="lg"
                       onClick={() => {
                         handleLogout();
@@ -192,14 +192,14 @@ const Header = ({ user }: HeaderProps) => {
                   </>
                 ) : (
                   <>
-                    <div className="my-2 border-t" />
+                    <div className="my-2 border-t border-white/20" />
                     <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" className="w-full" size="lg">
+                      <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10" size="lg">
                         Prijava
                       </Button>
                     </Link>
                     <Link to="/auth?mode=register" onClick={() => setMobileMenuOpen(false)}>
-                      <Button className="w-full bg-gradient-to-r from-primary to-primary/80" size="lg">
+                      <Button className="w-full bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm" size="lg">
                         Registracija
                       </Button>
                     </Link>

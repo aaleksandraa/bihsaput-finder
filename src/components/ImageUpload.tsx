@@ -67,8 +67,8 @@ const ImageUpload = ({
         .getPublicUrl(filePath);
 
       setPreview(publicUrl);
-      onUploadComplete(publicUrl);
       toast.success("Slika uspješno učitana");
+      await onUploadComplete(publicUrl);
     } catch (error: any) {
       console.error('Upload error:', error);
       toast.error(error.message || "Greška pri uploadu slike");

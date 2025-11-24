@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,11 @@ const GalleryUpload = ({
 }: GalleryUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [images, setImages] = useState(currentImages);
+
+  // Update local images when currentImages prop changes
+  useEffect(() => {
+    setImages(currentImages);
+  }, [currentImages]);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {

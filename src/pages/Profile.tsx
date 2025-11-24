@@ -53,7 +53,7 @@ const Profile = () => {
   const fetchProfile = async () => {
     setLoading(true);
 
-    // Fetch profile data excluding sensitive fields for public access
+    // Fetch profile data with public contact information
     const { data: profileData, error } = await supabase
       .from('profiles')
       .select(`
@@ -67,6 +67,8 @@ const Profile = () => {
         long_description,
         profile_image_url,
         slug,
+        email,
+        phone,
         website,
         years_experience,
         works_online,

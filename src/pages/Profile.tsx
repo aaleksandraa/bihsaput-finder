@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { 
   useProfile, 
   useProfileGallery, 
@@ -38,6 +39,7 @@ const DAYS = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Peta
 const Profile = () => {
   const { slug } = useParams();
   const [user, setUser] = useState<any>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Use React Query hooks for efficient data fetching
   const { data: profile, isLoading: profileLoading } = useProfile(slug);
@@ -455,7 +457,7 @@ const Profile = () => {
                         <div
                           key={image.id}
                           className="aspect-square rounded overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => window.open(image.image_url, '_blank')}
+                          onClick={() => setSelectedImage(image.image_url)}
                         >
                           <img
                             src={image.image_url}
@@ -468,6 +470,17 @@ const Profile = () => {
                   </CardContent>
                 </Card>
               )}
+
+              {/* Image Lightbox */}
+              <Dialog open={!!selectedImage} onOpenChange={(open) => !open && setSelectedImage(null)}>
+                <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-0">
+                  <img 
+                    src={selectedImage || ''} 
+                    alt="Gallery" 
+                    className="w-full h-auto max-h-[90vh] object-contain"
+                  />
+                </DialogContent>
+              </Dialog>
 
               {/* References */}
               {references.length > 0 && (

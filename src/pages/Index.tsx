@@ -99,7 +99,7 @@ const Index = () => {
       
       {/* Hero Section */}
       <section 
-        className="relative overflow-hidden text-white py-24 md:py-32 pb-64" 
+        className="relative overflow-hidden text-white py-24 md:py-32 pb-64 md:pb-80" 
         style={{ background: heroGradient || "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
       >
         <div className="container relative z-10">
@@ -134,7 +134,7 @@ const Index = () => {
       </section>
 
       {/* Search Section */}
-      <section id="search" className="py-12 -mt-52 relative z-20">
+      <section id="search" className="py-12 -mt-52 md:-mt-64 relative z-20">
         <div className="container max-w-5xl">
           <div className="bg-card rounded-3xl shadow-large p-8 md:p-10 border border-border/50 backdrop-blur-sm animate-slide-in-right">
             <SearchFilters />

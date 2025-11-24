@@ -171,20 +171,132 @@ const Profile = () => {
       <Header user={user} />
 
       {/* Hero Section */}
-      <section className="border-b bg-muted/30">
-        <div className="container py-8 md:py-12">
+      <section className="border-b bg-gradient-to-br from-background to-muted/20">
+        <div className="container px-4 py-6 md:py-12">
           <div className="max-w-4xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-start gap-6">
-              {/* Profile Image - Square */}
+            {/* Mobile Layout */}
+            <div className="sm:hidden">
+              <div className="flex gap-3 mb-4">
+                {/* Profile Image */}
+                <div className="flex-shrink-0">
+                  {profile.profile_image_url ? (
+                    <img 
+                      src={profile.profile_image_url} 
+                      alt={displayName}
+                      className="h-20 w-20 rounded-lg object-cover shadow-lg border-2 border-border"
+                    />
+                  ) : (
+                    <div className="h-20 w-20 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-lg">
+                      {profile.first_name?.[0]}{profile.last_name?.[0]}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Quick Info */}
+                <div className="flex-1 min-w-0 space-y-2">
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {profile.works_online && (
+                      <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                        <Globe className="h-3 w-3 mr-1" />
+                        Online
+                      </Badge>
+                    )}
+                    {profile.has_physical_office && (
+                      <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                        <Building2 className="h-3 w-3 mr-1" />
+                        Kancelarija
+                      </Badge>
+                    )}
+                    {profile.years_experience > 0 && (
+                      <Badge variant="outline" className="text-xs px-2 py-0.5">
+                        <Award className="h-3 w-3 mr-1" />
+                        {profile.years_experience} god.
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {/* Social Media Icons */}
+                  {(profile.linkedin_url || profile.facebook_url || profile.instagram_url) && (
+                    <div className="flex gap-2">
+                      {profile.linkedin_url && (
+                        <a
+                          href={profile.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                        >
+                          <Linkedin className="h-4 w-4" />
+                        </a>
+                      )}
+                      {profile.facebook_url && (
+                        <a
+                          href={profile.facebook_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                        >
+                          <Facebook className="h-4 w-4" />
+                        </a>
+                      )}
+                      {profile.instagram_url && (
+                        <a
+                          href={profile.instagram_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                        >
+                          <Instagram className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Name and Description */}
+              <div className="space-y-2 mb-4">
+                <h1 className="text-xl font-bold leading-tight">{displayName}</h1>
+                {profile.short_description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {profile.short_description}
+                  </p>
+                )}
+              </div>
+              
+              {/* Contact Buttons */}
+              <div className="flex gap-2">
+                {profile.email && (
+                  <Button size="sm" className="flex-1" asChild>
+                    <a href={`mailto:${profile.email}`}>
+                      <Mail className="h-4 w-4 mr-1.5" />
+                      Kontakt
+                    </a>
+                  </Button>
+                )}
+                {profile.phone && (
+                  <Button size="sm" variant="outline" className="flex-1" asChild>
+                    <a href={`tel:${profile.phone}`}>
+                      <Phone className="h-4 w-4 mr-1.5" />
+                      Pozovi
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Desktop Layout */}
+            <div className="hidden sm:flex items-start gap-6">
+              {/* Profile Image */}
               <div className="flex-shrink-0">
                 {profile.profile_image_url ? (
                   <img 
                     src={profile.profile_image_url} 
                     alt={displayName}
-                    className="h-24 w-24 sm:h-32 sm:w-32 rounded-lg object-cover shadow-md border border-border"
+                    className="h-32 w-32 rounded-lg object-cover shadow-lg border-2 border-border"
                   />
                 ) : (
-                  <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-3xl sm:text-4xl font-bold shadow-md">
+                  <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-4xl font-bold shadow-lg">
                     {profile.first_name?.[0]}{profile.last_name?.[0]}
                   </div>
                 )}
@@ -193,7 +305,7 @@ const Profile = () => {
               {/* Profile Info */}
               <div className="flex-1 space-y-3">
                 <div>
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1">{displayName}</h1>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-1">{displayName}</h1>
                   {profile.short_description && (
                     <p className="text-base md:text-lg text-muted-foreground">
                       {profile.short_description}
@@ -204,16 +316,19 @@ const Profile = () => {
                 <div className="flex flex-wrap gap-2">
                   {profile.works_online && (
                     <Badge variant="secondary" className="text-xs">
+                      <Globe className="h-3 w-3 mr-1.5" />
                       Online
                     </Badge>
                   )}
                   {profile.has_physical_office && (
                     <Badge variant="secondary" className="text-xs">
+                      <Building2 className="h-3 w-3 mr-1.5" />
                       Fizička kancelarija
                     </Badge>
                   )}
                   {profile.years_experience > 0 && (
                     <Badge variant="outline" className="text-xs">
+                      <Award className="h-3 w-3 mr-1.5" />
                       {profile.years_experience} god. iskustva
                     </Badge>
                   )}

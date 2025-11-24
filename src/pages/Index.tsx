@@ -71,56 +71,77 @@ const Index = () => {
       <Header user={user} />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-hero-gradient text-white py-20">
+      <section className="relative overflow-hidden bg-hero-gradient text-white py-24 md:py-32">
         <div className="container relative z-10">
-          <div className="max-w-3xl mx-auto text-center space-y-6 animate-fade-in">
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+          <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
+            <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium mb-4 border border-white/20">
+              🇧🇦 Najveća baza knjigovođa u BiH
+            </div>
+            <h1 className="text-5xl md:text-7xl font-bold leading-tight tracking-tight">
               Pronađite pouzdanog knjigovоđu u BiH
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto font-light">
               Online baza certificiranih knjigovođa, računovođa i revizora širom Bosne i Hercegovine
             </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+              <Button size="lg" variant="secondary" className="text-lg px-8 py-6 shadow-large" asChild>
+                <a href="#search">
+                  <Search className="mr-2 h-5 w-5" />
+                  Započni pretragu
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm" asChild>
+                <a href="#usluge">
+                  <Briefcase className="mr-2 h-5 w-5" />
+                  Pregledaj usluge
+                </a>
+              </Button>
+            </div>
           </div>
         </div>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Search Section */}
-      <section className="py-12 -mt-8 relative z-20">
-        <div className="container">
-          <div className="bg-card rounded-2xl shadow-large p-8 animate-slide-in-right">
+      <section id="search" className="py-12 -mt-16 relative z-20">
+        <div className="container max-w-5xl">
+          <div className="bg-card rounded-3xl shadow-large p-8 md:p-10 border border-border/50 backdrop-blur-sm animate-slide-in-right">
             <SearchFilters />
           </div>
         </div>
       </section>
 
       {/* Services Section */}
-      <section id="usluge" className="py-16">
+      <section id="usluge" className="py-20 md:py-24">
         <div className="container">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Usluge knjigovođa</h2>
-            <p className="text-lg text-muted-foreground">
+          <div className="max-w-3xl mx-auto text-center mb-16">
+            <div className="inline-block px-4 py-1.5 bg-primary/10 rounded-full text-sm font-semibold text-primary mb-6">
+              Usluge
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight">Usluge knjigovođa</h2>
+            <p className="text-lg md:text-xl text-muted-foreground font-light">
               Pronađite stručnjaka za vašu specifičnu potrebu
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {mainCategories.map((category) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
+            {mainCategories.map((category, index) => (
               <Link key={category.id} to={`/usluge/${category.id}`}>
-                <Card className="h-full hover:shadow-lg transition-all hover-scale cursor-pointer">
-                  <CardHeader>
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
-                      <Briefcase className="h-6 w-6 text-primary" />
+                <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-border/50 group animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                  <CardHeader className="space-y-4">
+                    <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                      <Briefcase className="h-7 w-7 text-primary" />
                     </div>
-                    <CardTitle>{category.name}</CardTitle>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">{category.name}</CardTitle>
                     {category.description && (
-                      <CardDescription className="line-clamp-2">
+                      <CardDescription className="line-clamp-2 text-base">
                         {category.description}
                       </CardDescription>
                     )}
                   </CardHeader>
                   <CardContent>
-                    <Button variant="ghost" className="w-full justify-between group">
+                    <Button variant="ghost" className="w-full justify-between group-hover:bg-primary/5">
                       Saznaj više
                       <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Button>
@@ -130,10 +151,11 @@ const Index = () => {
             ))}
           </div>
 
-          <div className="text-center mt-8">
+          <div className="text-center mt-12">
             <Link to="/search">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="lg" className="font-semibold">
                 Pregledaj sve usluge
+                <ChevronRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -141,36 +163,36 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-muted/50">
+      <section className="py-20 md:py-24 bg-muted/30">
         <div className="container">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center space-y-4 animate-fade-in">
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
-                <Search className="h-8 w-8 text-primary" />
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12 max-w-5xl mx-auto">
+            <div className="text-center space-y-6 animate-fade-in group">
+              <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mx-auto shadow-soft group-hover:shadow-medium transition-all group-hover:scale-110 duration-300">
+                <Search className="h-9 w-9 text-white" />
               </div>
-              <h3 className="text-xl font-semibold">Brza pretraga</h3>
-              <p className="text-muted-foreground">
-                Filtrirajte po lokaciji, uslugama i dostupnosti
+              <h3 className="text-2xl font-bold">Brza pretraga</h3>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Filtrirajte po lokaciji, uslugama i dostupnosti sa naprednim filterima
               </p>
             </div>
             
-            <div className="text-center space-y-4 animate-fade-in [animation-delay:100ms]">
-              <div className="h-16 w-16 rounded-full bg-secondary/10 flex items-center justify-center mx-auto">
-                <MapPin className="h-8 w-8 text-secondary" />
+            <div className="text-center space-y-6 animate-fade-in group" style={{ animationDelay: '100ms' }}>
+              <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center mx-auto shadow-soft group-hover:shadow-medium transition-all group-hover:scale-110 duration-300">
+                <MapPin className="h-9 w-9 text-white" />
               </div>
-              <h3 className="text-xl font-semibold">Lokalna podrška</h3>
-              <p className="text-muted-foreground">
-                Pronađite stručnjake u vašem gradu ili entitetu
+              <h3 className="text-2xl font-bold">Lokalna podrška</h3>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Pronađite stručnjake u vašem gradu ili entitetu sa preciznim mapama
               </p>
             </div>
             
-            <div className="text-center space-y-4 animate-fade-in [animation-delay:200ms]">
-              <div className="h-16 w-16 rounded-full bg-success/10 flex items-center justify-center mx-auto">
-                <TrendingUp className="h-8 w-8 text-success" />
+            <div className="text-center space-y-6 animate-fade-in group" style={{ animationDelay: '200ms' }}>
+              <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-success to-success/70 flex items-center justify-center mx-auto shadow-soft group-hover:shadow-medium transition-all group-hover:scale-110 duration-300">
+                <TrendingUp className="h-9 w-9 text-white" />
               </div>
-              <h3 className="text-xl font-semibold">Provjereni profesionalci</h3>
-              <p className="text-muted-foreground">
-                Svi profili su provjereni i verifikovani
+              <h3 className="text-2xl font-bold">Provjereni profesionalci</h3>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Svi profili su provjereni i verifikovani sa detaljnim informacijama
               </p>
             </div>
           </div>
@@ -178,56 +200,83 @@ const Index = () => {
       </section>
 
       {/* Profiles Grid */}
-      <section className="py-16">
+      <section className="py-20 md:py-24">
         <div className="container">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-2">Preporučeni profili</h2>
-            <p className="text-muted-foreground">
+          <div className="mb-12 max-w-3xl">
+            <div className="inline-block px-4 py-1.5 bg-primary/10 rounded-full text-sm font-semibold text-primary mb-6">
+              Profesionalci
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Preporučeni profili</h2>
+            <p className="text-lg md:text-xl text-muted-foreground font-light">
               Pronađite odgovarajućeg knjigovоđu za vaše potrebe
             </p>
           </div>
 
           {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+            <div className="text-center py-20">
+              <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+              <p className="mt-4 text-muted-foreground">Učitavanje profila...</p>
             </div>
           ) : profiles.length > 0 ? (
             <>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                 {profiles.map((profile) => (
                   <ProfileCard key={profile.id} profile={profile} />
                 ))}
               </div>
               
-              <div className="mt-8 text-center">
+              <div className="mt-12 flex gap-4 justify-center flex-wrap">
+                <Link to="/search">
+                  <Button size="lg" variant="default" className="font-semibold">
+                    <Search className="h-5 w-5 mr-2" />
+                    Pretraži sve profile
+                  </Button>
+                </Link>
                 <Link to="/mapa">
-                  <Button variant="outline" size="lg">
-                    <MapPin className="h-4 w-4 mr-2" />
+                  <Button size="lg" variant="outline" className="font-semibold">
+                    <MapPin className="h-5 w-5 mr-2" />
                     Prikaži na mapi
                   </Button>
                 </Link>
               </div>
             </>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">
-                Trenutno nema dostupnih profila. Budite prvi koji će se registrovati!
-              </p>
+            <div className="text-center py-16 bg-muted/30 rounded-3xl border border-border/50">
+              <div className="max-w-md mx-auto space-y-4">
+                <p className="text-xl font-semibold">Trenutno nema dostupnih profila</p>
+                <p className="text-muted-foreground">
+                  Budite prvi koji će se registrovati i proširiti svoju klijentelu!
+                </p>
+              </div>
             </div>
           )}
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-accent">
-        <div className="container text-center space-y-6">
-          <h2 className="text-3xl font-bold">Jeste li knjigovođa?</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Pridružite se našoj platformi i povećajte svoju vidljivost. Besplatna registracija!
-          </p>
-          <Button size="lg" className="bg-hero-gradient text-lg px-8" onClick={() => window.location.href = '/auth?mode=register'}>
-            Registrujte se besplatno
-          </Button>
+      <section className="py-20 md:py-28 bg-gradient-to-br from-primary via-primary to-primary/90 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20" />
+        <div className="container text-center space-y-8 relative z-10">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium border border-white/20">
+              Za profesionalce
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold leading-tight">Jeste li knjigovođa?</h2>
+            <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto font-light">
+              Pridružite se našoj platformi i povećajte svoju vidljivost. Besplatna registracija za sve profesionalce!
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" variant="secondary" className="text-lg px-10 py-6 shadow-large font-semibold" onClick={() => window.location.href = '/auth?mode=register'}>
+              Registrujte se besplatno
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button size="lg" variant="outline" className="text-lg px-10 py-6 bg-white/10 hover:bg-white/20 border-white/30 text-white backdrop-blur-sm font-semibold" asChild>
+              <Link to="/search">
+                Pregledaj profile
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
     </div>

@@ -213,6 +213,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "certificates_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cities: {
@@ -287,6 +294,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "client_references_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       entities: {
@@ -340,6 +354,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "gallery_images_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profile_services: {
@@ -364,6 +385,13 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_services_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -605,11 +633,109 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "working_hours_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          business_city_id: string | null
+          business_type: Database["public"]["Enums"]["business_type"] | null
+          company_name: string | null
+          created_at: string | null
+          facebook_url: string | null
+          first_name: string | null
+          has_physical_office: boolean | null
+          id: string | null
+          instagram_url: string | null
+          is_active: boolean | null
+          last_name: string | null
+          latitude: number | null
+          linkedin_url: string | null
+          long_description: string | null
+          longitude: number | null
+          professional_organizations: string | null
+          profile_image_url: string | null
+          registration_completed: boolean | null
+          short_description: string | null
+          slug: string | null
+          updated_at: string | null
+          website: string | null
+          works_locally_only: boolean | null
+          works_online: boolean | null
+          years_experience: number | null
+        }
+        Insert: {
+          business_city_id?: string | null
+          business_type?: Database["public"]["Enums"]["business_type"] | null
+          company_name?: string | null
+          created_at?: string | null
+          facebook_url?: string | null
+          first_name?: string | null
+          has_physical_office?: boolean | null
+          id?: string | null
+          instagram_url?: string | null
+          is_active?: boolean | null
+          last_name?: string | null
+          latitude?: number | null
+          linkedin_url?: string | null
+          long_description?: string | null
+          longitude?: number | null
+          professional_organizations?: string | null
+          profile_image_url?: string | null
+          registration_completed?: boolean | null
+          short_description?: string | null
+          slug?: string | null
+          updated_at?: string | null
+          website?: string | null
+          works_locally_only?: boolean | null
+          works_online?: boolean | null
+          years_experience?: number | null
+        }
+        Update: {
+          business_city_id?: string | null
+          business_type?: Database["public"]["Enums"]["business_type"] | null
+          company_name?: string | null
+          created_at?: string | null
+          facebook_url?: string | null
+          first_name?: string | null
+          has_physical_office?: boolean | null
+          id?: string | null
+          instagram_url?: string | null
+          is_active?: boolean | null
+          last_name?: string | null
+          latitude?: number | null
+          linkedin_url?: string | null
+          long_description?: string | null
+          longitude?: number | null
+          professional_organizations?: string | null
+          profile_image_url?: string | null
+          registration_completed?: boolean | null
+          short_description?: string | null
+          slug?: string | null
+          updated_at?: string | null
+          website?: string | null
+          works_locally_only?: boolean | null
+          works_online?: boolean | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_business_city_id_fkey"
+            columns: ["business_city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       generate_unique_slug: {

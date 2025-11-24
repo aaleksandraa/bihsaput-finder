@@ -59,18 +59,18 @@ const Index = () => {
   });
 
   useEffect(() => {
-    // Generate random gradient on mount
+    // Generate random darker gradient on mount for better text readability
     const gradients = [
-      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", // Blue to purple
-      "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", // Pink to red
-      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)", // Light blue to cyan
-      "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)", // Green to turquoise
-      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", // Pink to yellow
-      "linear-gradient(135deg, #30cfd0 0%, #330867 100%)", // Cyan to deep purple
-      "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", // Mint to pink
-      "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)", // Coral to light pink
-      "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)", // Peach gradient
-      "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)", // Green to blue
+      "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)", // Blue to purple
+      "linear-gradient(135deg, #434343 0%, #000000 50%, #434343 100%)", // Dark gray to black
+      "linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%)", // Deep blue
+      "linear-gradient(135deg, #283c86 0%, #45a247 50%, #283c86 100%)", // Navy to forest green
+      "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #0f2027 100%)", // Dark teal
+      "linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #2c3e50 100%)", // Dark slate to blue
+      "linear-gradient(135deg, #232526 0%, #414345 50%, #232526 100%)", // Charcoal
+      "linear-gradient(135deg, #134e5e 0%, #71b280 50%, #134e5e 100%)", // Ocean teal to green
+      "linear-gradient(135deg, #360033 0%, #0b8793 50%, #360033 100%)", // Deep purple to teal
+      "linear-gradient(135deg, #1f4037 0%, #99f2c8 50%, #1f4037 100%)", // Forest to mint
     ];
     
     const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
@@ -99,8 +99,8 @@ const Index = () => {
       
       {/* Hero Section */}
       <section 
-        className="relative overflow-hidden text-white py-24 md:py-32 pb-64 md:pb-80" 
-        style={{ background: heroGradient || "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
+        className="relative overflow-hidden text-white py-24 md:py-32 pb-64 md:pb-80 animated-gradient" 
+        style={{ background: heroGradient || "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)" }}
       >
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">

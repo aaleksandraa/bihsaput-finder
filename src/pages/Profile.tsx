@@ -285,25 +285,145 @@ const Profile = () => {
 
       {/* Main Content */}
       <div className="container py-8 md:py-12">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto space-y-6 md:space-y-8">
+          {/* About - No Title */}
+          {profile.long_description && (
+            <div className="animate-fade-in">
+              <div className="prose prose-slate max-w-none">
+                <p className="text-base md:text-lg text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                  {profile.long_description}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="grid lg:grid-cols-3 gap-6 md:gap-8">
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-6 md:space-y-8">
-              {/* About */}
-              {profile.long_description && (
-                <Card className="animate-fade-in">
-                  <CardContent className="pt-6">
-                    <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                      <Building2 className="h-6 w-6 text-primary" />
-                      O meni
-                    </h2>
-                    <div className="prose prose-slate max-w-none">
-                      <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
-                        {profile.long_description}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Contact Info Card */}
+              <Card className="animate-fade-in">
+                <CardContent className="pt-6">
+                  <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <Building2 className="h-6 w-6 text-primary" />
+                    Kontakt informacije
+                  </h2>
+                  
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {profile.email && (
+                      <a
+                        href={`mailto:${profile.email}`}
+                        className="flex items-center gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors group"
+                      >
+                        <Mail className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground">Email</p>
+                          <p className="text-sm truncate font-medium">{profile.email}</p>
+                        </div>
+                      </a>
+                    )}
+                    
+                    {profile.phone && (
+                      <a
+                        href={`tel:${profile.phone}`}
+                        className="flex items-center gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors group"
+                      >
+                        <Phone className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                        <div className="flex-1">
+                          <p className="text-xs text-muted-foreground">Telefon</p>
+                          <p className="text-sm font-medium">{profile.phone}</p>
+                        </div>
+                      </a>
+                    )}
+                    
+                    {profile.website && (
+                      <a
+                        href={profile.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-4 rounded-lg border hover:bg-muted/50 transition-colors group"
+                      >
+                        <Globe className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground">Web stranica</p>
+                          <p className="text-sm truncate font-medium">Posjetite</p>
+                        </div>
+                      </a>
+                    )}
+
+                    {(profile.business_street || profile.business_city) && (
+                      <div className="flex items-start gap-3 p-4 rounded-lg border">
+                        <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Adresa</p>
+                          <p className="text-sm font-medium">
+                            {profile.business_street}
+                            {profile.business_city && `, ${profile.business_city.name}`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Social Media */}
+                  {(profile.linkedin_url || profile.facebook_url || profile.instagram_url) && (
+                    <>
+                      <Separator className="my-6" />
+                      <div className="flex items-center justify-center gap-4">
+                        {profile.linkedin_url && (
+                          <a
+                            href={profile.linkedin_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-3 rounded-lg border hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
+                          >
+                            <Linkedin className="h-6 w-6" />
+                          </a>
+                        )}
+                        {profile.facebook_url && (
+                          <a
+                            href={profile.facebook_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-3 rounded-lg border hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
+                          >
+                            <Facebook className="h-6 w-6" />
+                          </a>
+                        )}
+                        {profile.instagram_url && (
+                          <a
+                            href={profile.instagram_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-3 rounded-lg border hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
+                          >
+                            <Instagram className="h-6 w-6" />
+                          </a>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Gallery */}
+              {gallery.length > 0 && (
+                <div className="animate-fade-in">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {gallery.map((image: any) => (
+                      <div
+                        key={image.id}
+                        className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover-scale shadow-lg"
+                        onClick={() => window.open(image.image_url, '_blank')}
+                      >
+                        <img
+                          src={image.image_url}
+                          alt="Gallery"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Services */}
@@ -384,105 +504,6 @@ const Profile = () => {
 
             {/* Right Column - Sidebar */}
             <div className="space-y-6">
-              {/* Contact Info */}
-              <Card className="animate-fade-in sticky top-4">
-                <CardContent className="pt-6 space-y-4">
-                  <h3 className="font-bold text-lg mb-4">Kontakt informacije</h3>
-                  
-                  {profile.email && (
-                    <a
-                      href={`mailto:${profile.email}`}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
-                    >
-                      <Mail className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">Email</p>
-                        <p className="text-sm truncate font-medium">{profile.email}</p>
-                      </div>
-                    </a>
-                  )}
-                  
-                  {profile.phone && (
-                    <a
-                      href={`tel:${profile.phone}`}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
-                    >
-                      <Phone className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
-                      <div className="flex-1">
-                        <p className="text-xs text-muted-foreground">Telefon</p>
-                        <p className="text-sm font-medium">{profile.phone}</p>
-                      </div>
-                    </a>
-                  )}
-                  
-                  {profile.website && (
-                    <a
-                      href={profile.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
-                    >
-                      <Globe className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-muted-foreground">Web stranica</p>
-                        <p className="text-sm truncate font-medium">Posjetite</p>
-                      </div>
-                    </a>
-                  )}
-
-                  {(profile.business_street || profile.business_city) && (
-                    <div className="flex items-start gap-3 p-3 rounded-lg">
-                      <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Adresa</p>
-                        <p className="text-sm font-medium">
-                          {profile.business_street}
-                          {profile.business_city && `, ${profile.business_city.name}`}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Social Media */}
-                  {(profile.linkedin_url || profile.facebook_url || profile.instagram_url) && (
-                    <>
-                      <Separator className="my-4" />
-                      <div className="flex items-center justify-center gap-4">
-                        {profile.linkedin_url && (
-                          <a
-                            href={profile.linkedin_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
-                          >
-                            <Linkedin className="h-5 w-5" />
-                          </a>
-                        )}
-                        {profile.facebook_url && (
-                          <a
-                            href={profile.facebook_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
-                          >
-                            <Facebook className="h-5 w-5" />
-                          </a>
-                        )}
-                        {profile.instagram_url && (
-                          <a
-                            href={profile.instagram_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-2 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
-                          >
-                            <Instagram className="h-5 w-5" />
-                          </a>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
 
               {/* Working Hours */}
               {workingHours.length > 0 && (

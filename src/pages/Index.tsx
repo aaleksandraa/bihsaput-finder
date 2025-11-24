@@ -5,11 +5,13 @@ import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
 import ProfileCard from "@/components/ProfileCard";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, TrendingUp } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { MapPin, Search, TrendingUp, Briefcase, ChevronRight } from "lucide-react";
 
 const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [profiles, setProfiles] = useState<any[]>([]);
+  const [mainCategories, setMainCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,6 +28,7 @@ const Index = () => {
 
   useEffect(() => {
     fetchProfiles();
+    fetchMainCategories();
   }, []);
 
   const fetchProfiles = async () => {
@@ -47,6 +50,19 @@ const Index = () => {
 
     if (!error && data) {
       setProfiles(data);
+    }
+  };
+
+  const fetchMainCategories = async () => {
+    const { data } = await supabase
+      .from('service_categories')
+      .select('*')
+      .is('parent_id', null)
+      .order('name')
+      .limit(6);
+
+    if (data) {
+      setMainCategories(data);
     }
   };
 
@@ -74,6 +90,52 @@ const Index = () => {
         <div className="container">
           <div className="bg-card rounded-2xl shadow-large p-8 animate-slide-in-right">
             <SearchFilters />
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section id="usluge" className="py-16">
+        <div className="container">
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Usluge knjigovođa</h2>
+            <p className="text-lg text-muted-foreground">
+              Pronađite stručnjaka za vašu specifičnu potrebu
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {mainCategories.map((category) => (
+              <Link key={category.id} to={`/usluge/${category.id}`}>
+                <Card className="h-full hover:shadow-lg transition-all hover-scale cursor-pointer">
+                  <CardHeader>
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+                      <Briefcase className="h-6 w-6 text-primary" />
+                    </div>
+                    <CardTitle>{category.name}</CardTitle>
+                    {category.description && (
+                      <CardDescription className="line-clamp-2">
+                        {category.description}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <Button variant="ghost" className="w-full justify-between group">
+                      Saznaj više
+                      <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <Link to="/search">
+              <Button variant="outline" size="lg">
+                Pregledaj sve usluge
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

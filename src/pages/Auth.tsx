@@ -8,6 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import Header from "@/components/Header";
+import { z } from "zod";
+
+// Input validation schemas
+const emailSchema = z.string().email("Email adresa nije validna").max(255, "Email mora biti kraći od 255 karaktera");
+const passwordSchema = z.string().min(6, "Lozinka mora imati najmanje 6 karaktera").max(128, "Lozinka je preduga");
+const nameSchema = z.string().trim().min(2, "Ime mora imati najmanje 2 karaktera").max(100, "Ime je predugo");
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -21,6 +27,7 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -32,8 +39,76 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const validateLogin = () => {
+    const newErrors: Record<string, string> = {};
+    
+    try {
+      emailSchema.parse(email);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        newErrors.email = error.errors[0].message;
+      }
+    }
+    
+    try {
+      passwordSchema.parse(password);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        newErrors.password = error.errors[0].message;
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateRegister = () => {
+    const newErrors: Record<string, string> = {};
+    
+    try {
+      nameSchema.parse(firstName);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        newErrors.firstName = error.errors[0].message;
+      }
+    }
+    
+    try {
+      nameSchema.parse(lastName);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        newErrors.lastName = error.errors[0].message;
+      }
+    }
+    
+    try {
+      emailSchema.parse(email);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        newErrors.email = error.errors[0].message;
+      }
+    }
+    
+    try {
+      passwordSchema.parse(password);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        newErrors.password = error.errors[0].message;
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateLogin()) {
+      toast.error("Molimo popravite greške u formi");
+      return;
+    }
+    
     setIsLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -53,6 +128,12 @@ const Auth = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateRegister()) {
+      toast.error("Molimo popravite greške u formi");
+      return;
+    }
+    
     setIsLoading(true);
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -118,9 +199,17 @@ const Auth = () => {
                       id="firstName"
                       type="text"
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                        setErrors({ ...errors, firstName: '' });
+                      }}
                       required
+                      maxLength={100}
+                      className={errors.firstName ? "border-destructive" : ""}
                     />
+                    {errors.firstName && (
+                      <p className="text-sm text-destructive">{errors.firstName}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Prezime</Label>
@@ -128,9 +217,17 @@ const Auth = () => {
                       id="lastName"
                       type="text"
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        setErrors({ ...errors, lastName: '' });
+                      }}
                       required
+                      maxLength={100}
+                      className={errors.lastName ? "border-destructive" : ""}
                     />
+                    {errors.lastName && (
+                      <p className="text-sm text-destructive">{errors.lastName}</p>
+                    )}
                   </div>
                 </>
               )}
@@ -141,9 +238,17 @@ const Auth = () => {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrors({ ...errors, email: '' });
+                  }}
                   required
+                  maxLength={255}
+                  className={errors.email ? "border-destructive" : ""}
                 />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -152,9 +257,17 @@ const Auth = () => {
                   id="password"
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrors({ ...errors, password: '' });
+                  }}
                   required
+                  maxLength={128}
+                  className={errors.password ? "border-destructive" : ""}
                 />
+                {errors.password && (
+                  <p className="text-sm text-destructive">{errors.password}</p>
+                )}
               </div>
 
               <Button type="submit" className="w-full bg-hero-gradient" disabled={isLoading}>

@@ -16,17 +16,12 @@ import {
   Redo,
   Link as LinkIcon,
   Image as ImageIcon,
-  Code,
-  Strikethrough,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  AlignJustify
+  Code
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 
 interface TipTapEditorProps {
   content: string;
@@ -40,17 +35,27 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3, 4, 5, 6],
+        },
         bulletList: {
-          keepMarks: true,
-          keepAttributes: false,
+          HTMLAttributes: {
+            class: 'list-disc list-inside',
+          },
         },
         orderedList: {
-          keepMarks: true,
-          keepAttributes: false,
+          HTMLAttributes: {
+            class: 'list-decimal list-inside',
+          },
+        },
+        blockquote: {
+          HTMLAttributes: {
+            class: 'border-l-4 border-gray-300 pl-4 italic',
+          },
         },
       }),
       Image.configure({
-        inline: true,
+        inline: false,
         allowBase64: true,
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded-lg my-4',
@@ -59,23 +64,33 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-primary underline',
+          class: 'text-primary underline cursor-pointer',
         },
       }),
     ],
-    content,
+    content: content || '<p></p>',
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      const html = editor.getHTML();
+      console.log('Editor updated:', html);
+      onChange(html);
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-neutral dark:prose-invert max-w-none min-h-[300px] focus:outline-none p-4',
+        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-xl dark:prose-invert max-w-none min-h-[300px] focus:outline-none p-4 [&_ul]:list-disc [&_ul]:list-inside [&_ol]:list-decimal [&_ol]:list-inside [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:italic',
       },
     },
   });
 
+  // Update editor content when prop changes
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      console.log('Setting editor content:', content);
+      editor.commands.setContent(content || '<p></p>');
+    }
+  }, [content, editor]);
+
   if (!editor) {
-    return null;
+    return <div>Loading editor...</div>;
   }
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,20 +149,11 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
     }
   };
 
-  const addImageFromUrl = () => {
-    const url = window.prompt('Unesite URL slike:');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  };
-
   const addLink = () => {
     const previousUrl = editor.getAttributes('link').href;
     const url = window.prompt('Unesite URL linka:', previousUrl);
     
-    if (url === null) {
-      return;
-    }
+    if (url === null) return;
 
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
@@ -155,6 +161,26 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
     }
 
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  };
+
+  const toggleHeading = (level: 1 | 2 | 3) => {
+    console.log('Toggling heading level:', level);
+    editor.chain().focus().toggleHeading({ level }).run();
+  };
+
+  const toggleBulletList = () => {
+    console.log('Toggling bullet list');
+    editor.chain().focus().toggleBulletList().run();
+  };
+
+  const toggleOrderedList = () => {
+    console.log('Toggling ordered list');
+    editor.chain().focus().toggleOrderedList().run();
+  };
+
+  const toggleBlockquote = () => {
+    console.log('Toggling blockquote');
+    editor.chain().focus().toggleBlockquote().run();
   };
 
   return (
@@ -170,13 +196,16 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
       <Card className="p-2 border-b">
         <div className="flex flex-wrap gap-1">
           {/* Text Formatting */}
-          <div className="flex gap-1 pr-2 border-r">
+          <div className="flex gap-1 pr-2 border-r border-border">
             <Button
               type="button"
               size="sm"
               variant={editor.isActive('bold') ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              title="Bold"
+              onClick={() => {
+                console.log('Bold clicked');
+                editor.chain().focus().toggleBold().run();
+              }}
+              title="Bold (Ctrl+B)"
             >
               <Bold className="h-4 w-4" />
             </Button>
@@ -184,38 +213,35 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
               type="button"
               size="sm"
               variant={editor.isActive('italic') ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              title="Italic"
+              onClick={() => {
+                console.log('Italic clicked');
+                editor.chain().focus().toggleItalic().run();
+              }}
+              title="Italic (Ctrl+I)"
             >
               <Italic className="h-4 w-4" />
             </Button>
             <Button
               type="button"
               size="sm"
-              variant={editor.isActive('strike') ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleStrike().run()}
-              title="Strikethrough"
-            >
-              <Strikethrough className="h-4 w-4" />
-            </Button>
-            <Button
-              type="button"
-              size="sm"
               variant={editor.isActive('code') ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleCode().run()}
-              title="Code"
+              onClick={() => {
+                console.log('Code clicked');
+                editor.chain().focus().toggleCode().run();
+              }}
+              title="Inline Code"
             >
               <Code className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Headings */}
-          <div className="flex gap-1 pr-2 border-r">
+          <div className="flex gap-1 pr-2 border-r border-border">
             <Button
               type="button"
               size="sm"
               variant={editor.isActive('heading', { level: 1 }) ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+              onClick={() => toggleHeading(1)}
               title="Heading 1"
             >
               <Heading1 className="h-4 w-4" />
@@ -224,7 +250,7 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
               type="button"
               size="sm"
               variant={editor.isActive('heading', { level: 2 }) ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+              onClick={() => toggleHeading(2)}
               title="Heading 2"
             >
               <Heading2 className="h-4 w-4" />
@@ -233,20 +259,20 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
               type="button"
               size="sm"
               variant={editor.isActive('heading', { level: 3 }) ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+              onClick={() => toggleHeading(3)}
               title="Heading 3"
             >
               <Heading3 className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Lists */}
-          <div className="flex gap-1 pr-2 border-r">
+          {/* Lists & Quote */}
+          <div className="flex gap-1 pr-2 border-r border-border">
             <Button
               type="button"
               size="sm"
               variant={editor.isActive('bulletList') ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleBulletList().run()}
+              onClick={toggleBulletList}
               title="Bullet List"
             >
               <List className="h-4 w-4" />
@@ -255,8 +281,8 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
               type="button"
               size="sm"
               variant={editor.isActive('orderedList') ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              title="Ordered List"
+              onClick={toggleOrderedList}
+              title="Numbered List"
             >
               <ListOrdered className="h-4 w-4" />
             </Button>
@@ -264,30 +290,21 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
               type="button"
               size="sm"
               variant={editor.isActive('blockquote') ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              onClick={toggleBlockquote}
               title="Quote"
             >
               <Quote className="h-4 w-4" />
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={editor.isActive('codeBlock') ? 'default' : 'ghost'}
-              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-              title="Code Block"
-            >
-              <Code className="h-4 w-4" />
-            </Button>
           </div>
 
           {/* Links & Images */}
-          <div className="flex gap-1 pr-2 border-r">
+          <div className="flex gap-1 pr-2 border-r border-border">
             <Button
               type="button"
               size="sm"
               variant={editor.isActive('link') ? 'default' : 'ghost'}
               onClick={addLink}
-              title="Add Link"
+              title="Add/Edit Link"
             >
               <LinkIcon className="h-4 w-4" />
             </Button>
@@ -310,7 +327,7 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
               variant="ghost"
               onClick={() => editor.chain().focus().undo().run()}
               disabled={!editor.can().undo()}
-              title="Undo"
+              title="Undo (Ctrl+Z)"
             >
               <Undo className="h-4 w-4" />
             </Button>
@@ -320,7 +337,7 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
               variant="ghost"
               onClick={() => editor.chain().focus().redo().run()}
               disabled={!editor.can().redo()}
-              title="Redo"
+              title="Redo (Ctrl+Shift+Z)"
             >
               <Redo className="h-4 w-4" />
             </Button>
@@ -328,9 +345,13 @@ export const TipTapEditor = ({ content, onChange }: TipTapEditorProps) => {
         </div>
       </Card>
       
-      <Card className="border">
+      <Card className="border min-h-[350px]">
         <EditorContent editor={editor} />
       </Card>
+      
+      <div className="text-xs text-muted-foreground">
+        Koristite toolbar dugmad iznad za formatiranje teksta. Liste rade kada dodajete tekst u editor.
+      </div>
     </div>
   );
 };

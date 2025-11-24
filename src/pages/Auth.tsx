@@ -19,7 +19,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<'login' | 'register'>(
+  const [mode, setMode] = useState<'login' | 'register' | 'reset'>(
     searchParams.get('mode') === 'register' ? 'register' : 'login'
   );
   
@@ -172,8 +172,41 @@ const Auth = () => {
     }
 
     setIsLoading(false);
-    toast.success("Uspješno ste se registrovali! Možete se prijaviti.");
+    toast.success("Uspješno ste se registrovali! Provjerite email za potvrdu.");
     setMode('login');
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      toast.error("Molimo unesite vašu email adresu");
+      return;
+    }
+    
+    try {
+      emailSchema.parse(email);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+        return;
+      }
+    }
+    
+    setIsLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth?mode=reset`,
+    });
+
+    setIsLoading(false);
+
+    if (error) {
+      toast.error("Greška pri slanju emaila: " + error.message);
+    } else {
+      toast.success("Link za resetovanje lozinke je poslan na vaš email!");
+      setMode('login');
+    }
   };
 
   return (
@@ -182,15 +215,19 @@ const Auth = () => {
       <div className="container flex items-center justify-center py-12">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>{mode === 'login' ? 'Prijava' : 'Registracija'}</CardTitle>
+            <CardTitle>
+              {mode === 'login' ? 'Prijava' : mode === 'register' ? 'Registracija' : 'Resetuj lozinku'}
+            </CardTitle>
             <CardDescription>
               {mode === 'login' 
                 ? 'Prijavite se na vaš račun' 
-                : 'Kreirajte novi račun da biste počeli'}
+                : mode === 'register'
+                ? 'Kreirajte novi račun da biste počeli'
+                : 'Unesite vašu email adresu za resetovanje lozinke'}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
+            <form onSubmit={mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : handlePasswordReset} className="space-y-4">
               {mode === 'register' && (
                 <>
                   <div className="space-y-2">
@@ -251,30 +288,43 @@ const Auth = () => {
                 )}
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="password">Lozinka</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrors({ ...errors, password: '' });
-                  }}
-                  required
-                  maxLength={128}
-                  className={errors.password ? "border-destructive" : ""}
-                />
-                {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
-                )}
-              </div>
+              {mode !== 'reset' && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Lozinka</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrors({ ...errors, password: '' });
+                    }}
+                    required
+                    maxLength={128}
+                    className={errors.password ? "border-destructive" : ""}
+                  />
+                  {errors.password && (
+                    <p className="text-sm text-destructive">{errors.password}</p>
+                  )}
+                </div>
+              )}
 
               <Button type="submit" className="w-full bg-hero-gradient" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'login' ? 'Prijavi se' : 'Registruj se'}
+                {mode === 'login' ? 'Prijavi se' : mode === 'register' ? 'Registruj se' : 'Pošalji link'}
               </Button>
             </form>
+
+            {mode === 'login' && (
+              <div className="mt-3 text-center">
+                <button
+                  onClick={() => setMode('reset')}
+                  className="text-sm text-muted-foreground hover:text-primary hover:underline"
+                >
+                  Zaboravio si lozinku?
+                </button>
+              </div>
+            )}
 
             <div className="mt-4 text-center text-sm">
               {mode === 'login' ? (
@@ -287,9 +337,19 @@ const Auth = () => {
                     Registrujte se
                   </button>
                 </p>
-              ) : (
+              ) : mode === 'register' ? (
                 <p>
                   Već imate račun?{' '}
+                  <button
+                    onClick={() => setMode('login')}
+                    className="text-primary hover:underline"
+                  >
+                    Prijavite se
+                  </button>
+                </p>
+              ) : (
+                <p>
+                  Sjetili ste se lozinke?{' '}
                   <button
                     onClick={() => setMode('login')}
                     className="text-primary hover:underline"

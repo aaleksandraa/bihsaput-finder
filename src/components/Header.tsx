@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, User, LogOut, Shield, Menu, X, Home, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,9 +26,12 @@ interface HeaderProps {
 
 const Header = ({ user }: HeaderProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [heroGradient, setHeroGradient] = useState("");
+  
+  const isHomePage = location.pathname === '/';
 
   useEffect(() => {
     // Generate random darker gradient for mobile menu
@@ -79,13 +82,13 @@ const Header = ({ user }: HeaderProps) => {
   };
 
   return (
-    <header className="relative z-10 w-full border-b border-white/10">
+    <header className={`relative z-10 w-full border-b ${isHomePage ? 'border-white/10' : 'border-border bg-gray-900'}`}>
       <div className="container px-4 md:px-6">
         <div className="flex h-16 md:h-20 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group transition-all">
-            <div className="h-9 w-9 md:h-10 md:w-10 rounded-xl bg-white/20 shadow-md group-hover:shadow-lg transition-all" />
-            <span className="text-lg md:text-xl font-bold text-white">
+            <div className={`h-9 w-9 md:h-10 md:w-10 rounded-xl shadow-md group-hover:shadow-lg transition-all ${isHomePage ? 'bg-white/20' : 'bg-primary/20'}`} />
+            <span className={`text-lg md:text-xl font-bold ${isHomePage ? 'text-white' : 'text-foreground'}`}>
               Knjigovođe BiH
             </span>
           </Link>
@@ -93,7 +96,7 @@ const Header = ({ user }: HeaderProps) => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-2">
             <Link to="/search">
-              <Button variant="ghost" size="sm" className="gap-2 text-white hover:bg-white/10">
+              <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10' : 'hover:bg-accent'}`}>
                 <Search className="h-4 w-4" />
                 Pretraga
               </Button>
@@ -103,7 +106,7 @@ const Header = ({ user }: HeaderProps) => {
               <>
                 {isAdmin && (
                   <Link to="/admin">
-                    <Button variant="ghost" size="sm" className="gap-2 text-white hover:bg-white/10">
+                    <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10' : 'hover:bg-accent'}`}>
                       <Shield className="h-4 w-4" />
                       Admin
                     </Button>
@@ -112,7 +115,7 @@ const Header = ({ user }: HeaderProps) => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-2 text-white hover:bg-white/10">
+                    <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10' : 'hover:bg-accent'}`}>
                       <User className="h-4 w-4" />
                       Profil
                     </Button>
@@ -135,12 +138,12 @@ const Header = ({ user }: HeaderProps) => {
             ) : (
               <>
                 <Link to="/auth">
-                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+                  <Button variant="ghost" size="sm" className={isHomePage ? 'text-white hover:bg-white/10' : ''}>
                     Prijava
                   </Button>
                 </Link>
                 <Link to="/auth?mode=register">
-                  <Button size="sm" className="bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm">
+                  <Button size="sm" className={isHomePage ? 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm' : ''}>
                     Registracija
                   </Button>
                 </Link>
@@ -151,7 +154,7 @@ const Header = ({ user }: HeaderProps) => {
           {/* Mobile Menu */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="sm" className="p-2 text-white">
+              <Button variant="ghost" size="sm" className={`p-2 ${isHomePage ? 'text-white' : ''}`}>
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>

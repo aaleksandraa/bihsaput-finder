@@ -48,6 +48,7 @@ export const BlogManagement = () => {
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [generatingOGImage, setGeneratingOGImage] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [newTag, setNewTag] = useState("");
 
@@ -269,6 +270,49 @@ export const BlogManagement = () => {
     );
   };
 
+  const handleGenerateOGImage = async () => {
+    if (!formData.title || !formData.excerpt) {
+      toast({
+        title: "Greška",
+        description: "Morate unijeti naslov i kratki opis prije generacije slike.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setGeneratingOGImage(true);
+    try {
+      const tempPostId = editingPost?.id || 'temp-' + Date.now();
+      
+      const { data, error } = await supabase.functions.invoke('generate-og-image', {
+        body: {
+          postId: tempPostId,
+          title: formData.title,
+          excerpt: formData.excerpt
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.imageUrl) {
+        setFormData({ ...formData, featured_image_url: data.imageUrl });
+        toast({
+          title: "Uspjeh",
+          description: "OG slika je uspješno generisana!",
+        });
+      }
+    } catch (error) {
+      console.error('Error generating OG image:', error);
+      toast({
+        title: "Greška",
+        description: "Nije moguće generisati OG sliku. Provjerite da li imate dovoljno AI kredita.",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingOGImage(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
@@ -418,16 +462,27 @@ export const BlogManagement = () => {
 
               <div>
                 <Label>Featured slika</Label>
-                <div className="flex gap-2 items-center">
-                  <ImageUploadButton
-                    onUpload={(url) => setFormData({ ...formData, featured_image_url: url })}
-                  />
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2 items-center">
+                    <ImageUploadButton
+                      onUpload={(url) => setFormData({ ...formData, featured_image_url: url })}
+                      label="Upload sliku"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleGenerateOGImage}
+                      disabled={generatingOGImage || !formData.title}
+                    >
+                      {generatingOGImage ? "Generiše se..." : "🎨 Generiši AI sliku"}
+                    </Button>
+                  </div>
                   {formData.featured_image_url && (
-                    <div className="relative">
+                    <div className="relative inline-block">
                       <img
                         src={formData.featured_image_url}
                         alt="Preview"
-                        className="h-20 w-20 object-cover rounded"
+                        className="h-32 w-auto object-cover rounded border"
                       />
                       <Button
                         type="button"

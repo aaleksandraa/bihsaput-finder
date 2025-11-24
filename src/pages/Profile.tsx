@@ -260,25 +260,6 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-
-            {/* Gallery Thumbnails */}
-            {gallery.length > 0 && (
-              <div className="mt-8 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3 animate-fade-in">
-                {gallery.map((image: any) => (
-                  <div
-                    key={image.id}
-                    className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover-scale shadow-lg"
-                    onClick={() => window.open(image.image_url, '_blank')}
-                  >
-                    <img
-                      src={image.image_url}
-                      alt="Gallery"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </section>
@@ -363,45 +344,6 @@ const Profile = () => {
                       </div>
                     )}
                   </div>
-
-                  {/* Social Media */}
-                  {(profile.linkedin_url || profile.facebook_url || profile.instagram_url) && (
-                    <>
-                      <Separator className="my-6" />
-                      <div className="flex items-center justify-center gap-4">
-                        {profile.linkedin_url && (
-                          <a
-                            href={profile.linkedin_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-3 rounded-lg border hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
-                          >
-                            <Linkedin className="h-6 w-6" />
-                          </a>
-                        )}
-                        {profile.facebook_url && (
-                          <a
-                            href={profile.facebook_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-3 rounded-lg border hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
-                          >
-                            <Facebook className="h-6 w-6" />
-                          </a>
-                        )}
-                        {profile.instagram_url && (
-                          <a
-                            href={profile.instagram_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-3 rounded-lg border hover:bg-primary hover:text-primary-foreground transition-colors hover-scale"
-                          >
-                            <Instagram className="h-6 w-6" />
-                          </a>
-                        )}
-                      </div>
-                    </>
-                  )}
                 </CardContent>
               </Card>
 
@@ -504,6 +446,48 @@ const Profile = () => {
 
             {/* Right Column - Sidebar */}
             <div className="space-y-6">
+              {/* Social Media */}
+              {(profile.linkedin_url || profile.facebook_url || profile.instagram_url) && (
+                <Card className="animate-fade-in">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-center gap-3">
+                      {profile.linkedin_url && (
+                        <a
+                          href={profile.linkedin_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg hover:bg-muted transition-colors opacity-70 hover:opacity-100"
+                          title="LinkedIn"
+                        >
+                          <Linkedin className="h-5 w-5" />
+                        </a>
+                      )}
+                      {profile.facebook_url && (
+                        <a
+                          href={profile.facebook_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg hover:bg-muted transition-colors opacity-70 hover:opacity-100"
+                          title="Facebook"
+                        >
+                          <Facebook className="h-5 w-5" />
+                        </a>
+                      )}
+                      {profile.instagram_url && (
+                        <a
+                          href={profile.instagram_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg hover:bg-muted transition-colors opacity-70 hover:opacity-100"
+                          title="Instagram"
+                        >
+                          <Instagram className="h-5 w-5" />
+                        </a>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Working Hours */}
               {workingHours.length > 0 && (

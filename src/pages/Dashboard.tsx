@@ -2,15 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
+import ImageUpload from "@/components/ImageUpload";
+import GalleryUpload from "@/components/GalleryUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, User } from "lucide-react";
+import { Loader2, User, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,6 +37,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+      fetchGallery();
     }
   }, [user]);
 
@@ -53,6 +57,35 @@ const Dashboard = () => {
       toast.error("Greška pri učitavanju profila");
     } else {
       setProfile(data);
+    }
+  };
+
+  const fetchGallery = async () => {
+    if (!user) return;
+
+    const { data } = await supabase
+      .from('gallery_images')
+      .select('*')
+      .eq('profile_id', user.id)
+      .order('display_order');
+
+    if (data) {
+      setGalleryImages(data);
+    }
+  };
+
+  const handleProfileImageUpload = async (url: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ profile_image_url: url })
+      .eq('id', user.id);
+
+    if (error) {
+      toast.error("Greška pri ažuriranju profilne slike");
+    } else {
+      fetchProfile();
     }
   };
 
@@ -100,6 +133,14 @@ const Dashboard = () => {
                       </Button>
                     </div>
                   )}
+
+                  {profile.slug && (
+                    <div className="mt-4">
+                      <Button variant="outline" onClick={() => navigate(`/profil/${profile.slug}`)}>
+                        Pogledaj javni profil
+                      </Button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-6">
@@ -111,6 +152,33 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
+
+          {profile && profile.registration_completed && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  Slike i galerija
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <ImageUpload
+                  bucket="profile-images"
+                  path={user.id}
+                  currentImageUrl={profile.profile_image_url}
+                  onUploadComplete={handleProfileImageUpload}
+                  label="Profilna slika / Logo"
+                />
+
+                <GalleryUpload
+                  profileId={user.id}
+                  maxImages={5}
+                  currentImages={galleryImages}
+                  onUploadComplete={fetchGallery}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

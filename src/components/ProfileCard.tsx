@@ -17,10 +17,10 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
             <img 
               src={profile.profile_image_url} 
               alt={profile.company_name || `${profile.first_name} ${profile.last_name}`}
-              className="h-20 w-20 rounded-full object-cover flex-shrink-0 border-2 border-border"
+              className="h-20 w-20 rounded-lg object-cover flex-shrink-0 border border-border"
             />
           ) : (
-            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-2xl font-bold flex-shrink-0">
+            <div className="h-20 w-20 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-2xl font-bold flex-shrink-0">
               {profile.first_name?.[0]}{profile.last_name?.[0]}
             </div>
           )}

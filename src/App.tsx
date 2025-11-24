@@ -25,6 +25,12 @@ const SitemapRedirect = () => {
   return null;
 };
 
+// RSS redirect component
+const RSSRedirect = () => {
+  window.location.href = 'https://aiqxervrdndfddpkcglq.supabase.co/functions/v1/rss';
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -45,6 +51,7 @@ const App = () => (
           <Route path="/blog" element={<Blog />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/sitemap.xml" element={<SitemapRedirect />} />
+          <Route path="/rss.xml" element={<RSSRedirect />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

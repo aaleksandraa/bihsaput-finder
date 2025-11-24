@@ -15,3 +15,6 @@ Allow: /
 
 Sitemap: https://knjigovodje.ba/sitemap.xml
 
+# RSS Feed
+https://knjigovodje.ba/rss.xml
+

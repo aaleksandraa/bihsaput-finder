@@ -360,16 +360,15 @@ const Profile = () => {
       </section>
 
       {/* Main Content */}
-      <div className="container py-8 md:py-12">
+      <div className="container px-4 py-8 md:py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* About */}
               {profile.long_description && (
                 <Card>
                   <CardContent className="pt-6">
-                    <h2 className="text-xl font-semibold mb-4">O meni</h2>
                     <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                       {profile.long_description}
                     </p>

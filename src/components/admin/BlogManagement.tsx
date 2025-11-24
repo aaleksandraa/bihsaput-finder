@@ -3,12 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Edit, Plus } from "lucide-react";
+import { Trash2, Edit, Plus, X } from "lucide-react";
 import { format } from "date-fns";
+import { TipTapEditor } from "./TipTapEditor";
+import { ImageUploadButton } from "./ImageUploadButton";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 
 interface BlogPost {
   id: string;
@@ -22,13 +25,31 @@ interface BlogPost {
   published_at: string | null;
   meta_description: string | null;
   meta_keywords: string | null;
+  category_id: string | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export const BlogManagement = () => {
   const { toast } = useToast();
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [newTag, setNewTag] = useState("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -40,22 +61,42 @@ export const BlogManagement = () => {
     show_on_homepage: false,
     meta_description: "",
     meta_keywords: "",
+    category_id: "",
   });
 
   useEffect(() => {
-    fetchPosts();
+    fetchData();
   }, []);
 
-  const fetchPosts = async () => {
-    const { data, error } = await supabase
+  const fetchData = async () => {
+    const { data: postsData } = await supabase
       .from("blog_posts")
-      .select("*")
+      .select("*, blog_categories(name)")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      toast({ title: "Greška", description: "Nije moguće učitati blog postove.", variant: "destructive" });
-    } else {
-      setPosts(data || []);
+    const { data: categoriesData } = await supabase
+      .from("blog_categories")
+      .select("*")
+      .order("name");
+
+    const { data: tagsData } = await supabase
+      .from("blog_tags")
+      .select("*")
+      .order("name");
+
+    if (postsData) setPosts(postsData);
+    if (categoriesData) setCategories(categoriesData);
+    if (tagsData) setTags(tagsData);
+  };
+
+  const fetchPostTags = async (postId: string) => {
+    const { data } = await supabase
+      .from("blog_post_tags")
+      .select("blog_tag_id")
+      .eq("blog_post_id", postId);
+
+    if (data) {
+      setSelectedTags(data.map(pt => pt.blog_tag_id));
     }
   };
 
@@ -64,38 +105,65 @@ export const BlogManagement = () => {
 
     const postData = {
       ...formData,
+      category_id: formData.category_id || null,
       published_at: formData.is_published ? new Date().toISOString() : null,
     };
 
-    if (editingPost) {
-      const { error } = await supabase
-        .from("blog_posts")
-        .update(postData)
-        .eq("id", editingPost.id);
+    try {
+      if (editingPost) {
+        const { error } = await supabase
+          .from("blog_posts")
+          .update(postData)
+          .eq("id", editingPost.id);
 
-      if (error) {
-        toast({ title: "Greška", description: "Nije moguće ažurirati post.", variant: "destructive" });
-      } else {
+        if (error) throw error;
+
+        // Update tags
+        await supabase
+          .from("blog_post_tags")
+          .delete()
+          .eq("blog_post_id", editingPost.id);
+
+        if (selectedTags.length > 0) {
+          await supabase
+            .from("blog_post_tags")
+            .insert(selectedTags.map(tagId => ({
+              blog_post_id: editingPost.id,
+              blog_tag_id: tagId
+            })));
+        }
+
         toast({ title: "Uspjeh", description: "Post je uspješno ažuriran." });
-        resetForm();
-        fetchPosts();
-      }
-    } else {
-      const { error } = await supabase
-        .from("blog_posts")
-        .insert([postData]);
-
-      if (error) {
-        toast({ title: "Greška", description: "Nije moguće kreirati post.", variant: "destructive" });
       } else {
+        const { data: newPost, error } = await supabase
+          .from("blog_posts")
+          .insert([postData])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Add tags
+        if (newPost && selectedTags.length > 0) {
+          await supabase
+            .from("blog_post_tags")
+            .insert(selectedTags.map(tagId => ({
+              blog_post_id: newPost.id,
+              blog_tag_id: tagId
+            })));
+        }
+
         toast({ title: "Uspjeh", description: "Post je uspješno kreiran." });
-        resetForm();
-        fetchPosts();
       }
+      
+      resetForm();
+      fetchData();
+    } catch (error) {
+      toast({ title: "Greška", description: "Nije moguće sačuvati post.", variant: "destructive" });
     }
   };
 
-  const handleEdit = (post: BlogPost) => {
+  const handleEdit = async (post: BlogPost) => {
     setEditingPost(post);
     setIsCreating(true);
     setFormData({
@@ -108,7 +176,9 @@ export const BlogManagement = () => {
       show_on_homepage: post.show_on_homepage,
       meta_description: post.meta_description || "",
       meta_keywords: post.meta_keywords || "",
+      category_id: post.category_id || "",
     });
+    await fetchPostTags(post.id);
   };
 
   const handleDelete = async (id: string) => {
@@ -123,7 +193,7 @@ export const BlogManagement = () => {
       toast({ title: "Greška", description: "Nije moguće obrisati post.", variant: "destructive" });
     } else {
       toast({ title: "Uspjeh", description: "Post je uspješno obrisan." });
-      fetchPosts();
+      fetchData();
     }
   };
 
@@ -138,7 +208,9 @@ export const BlogManagement = () => {
       show_on_homepage: false,
       meta_description: "",
       meta_keywords: "",
+      category_id: "",
     });
+    setSelectedTags([]);
     setEditingPost(null);
     setIsCreating(false);
   };
@@ -155,8 +227,102 @@ export const BlogManagement = () => {
       .replace(/^-|-$/g, "");
   };
 
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    const slug = generateSlug(newCategory);
+    const { error } = await supabase
+      .from("blog_categories")
+      .insert([{ name: newCategory, slug }]);
+
+    if (error) {
+      toast({ title: "Greška", description: "Nije moguće dodati kategoriju.", variant: "destructive" });
+    } else {
+      toast({ title: "Uspjeh", description: "Kategorija je dodana." });
+      setNewCategory("");
+      fetchData();
+    }
+  };
+
+  const handleAddTag = async () => {
+    if (!newTag.trim()) return;
+
+    const slug = generateSlug(newTag);
+    const { error } = await supabase
+      .from("blog_tags")
+      .insert([{ name: newTag, slug }]);
+
+    if (error) {
+      toast({ title: "Greška", description: "Nije moguće dodati tag.", variant: "destructive" });
+    } else {
+      toast({ title: "Uspjeh", description: "Tag je dodan." });
+      setNewTag("");
+      fetchData();
+    }
+  };
+
+  const toggleTag = (tagId: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tagId) 
+        ? prev.filter(id => id !== tagId)
+        : [...prev, tagId]
+    );
+  };
+
   return (
     <div className="space-y-6">
+      <div className="grid md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Kategorije</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2 mb-4">
+              <Input
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                placeholder="Nova kategorija"
+              />
+              <Button onClick={handleAddCategory}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {categories.map(cat => (
+                <div key={cat.id} className="flex justify-between items-center p-2 border rounded">
+                  <span>{cat.name}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Tagovi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2 mb-4">
+              <Input
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                placeholder="Novi tag"
+              />
+              <Button onClick={handleAddTag}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {tags.map(tag => (
+                <Badge key={tag.id} variant="secondary">
+                  {tag.name}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Blog Postovi</h2>
         {!isCreating && (
@@ -183,10 +349,8 @@ export const BlogManagement = () => {
                   id="title"
                   value={formData.title}
                   onChange={(e) => {
-                    setFormData({ ...formData, title: e.target.value });
-                    if (!editingPost) {
-                      setFormData({ ...formData, title: e.target.value, slug: generateSlug(e.target.value) });
-                    }
+                    const title = e.target.value;
+                    setFormData({ ...formData, title, slug: generateSlug(title) });
                   }}
                   required
                 />
@@ -203,6 +367,37 @@ export const BlogManagement = () => {
               </div>
 
               <div>
+                <Label htmlFor="category">Kategorija</Label>
+                <select
+                  id="category"
+                  className="w-full p-2 border rounded"
+                  value={formData.category_id}
+                  onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
+                >
+                  <option value="">Bez kategorije</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <Label>Tagovi</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {tags.map(tag => (
+                    <Badge
+                      key={tag.id}
+                      variant={selectedTags.includes(tag.id) ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => toggleTag(tag.id)}
+                    >
+                      {tag.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div>
                 <Label htmlFor="excerpt">Kratki opis *</Label>
                 <Textarea
                   id="excerpt"
@@ -214,24 +409,38 @@ export const BlogManagement = () => {
               </div>
 
               <div>
-                <Label htmlFor="content">Sadržaj (HTML) *</Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  rows={10}
-                  required
+                <Label>Sadržaj *</Label>
+                <TipTapEditor
+                  content={formData.content}
+                  onChange={(html) => setFormData({ ...formData, content: html })}
                 />
               </div>
 
               <div>
-                <Label htmlFor="featured_image">URL featured slike</Label>
-                <Input
-                  id="featured_image"
-                  value={formData.featured_image_url}
-                  onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
-                  placeholder="https://example.com/image.jpg"
-                />
+                <Label>Featured slika</Label>
+                <div className="flex gap-2 items-center">
+                  <ImageUploadButton
+                    onUpload={(url) => setFormData({ ...formData, featured_image_url: url })}
+                  />
+                  {formData.featured_image_url && (
+                    <div className="relative">
+                      <img
+                        src={formData.featured_image_url}
+                        alt="Preview"
+                        className="h-20 w-20 object-cover rounded"
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        className="absolute -top-2 -right-2 h-6 w-6"
+                        onClick={() => setFormData({ ...formData, featured_image_url: "" })}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -284,7 +493,7 @@ export const BlogManagement = () => {
       )}
 
       <div className="space-y-4">
-        {posts.map((post) => (
+        {posts.map((post: any) => (
           <Card key={post.id}>
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -292,6 +501,7 @@ export const BlogManagement = () => {
                   <CardTitle>{post.title}</CardTitle>
                   <CardDescription>
                     {post.published_at && format(new Date(post.published_at), "dd.MM.yyyy. HH:mm")}
+                    {post.blog_categories && ` • ${post.blog_categories.name}`}
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">

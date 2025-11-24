@@ -14,9 +14,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      blog_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      blog_post_tags: {
+        Row: {
+          blog_post_id: string
+          blog_tag_id: string
+          created_at: string
+        }
+        Insert: {
+          blog_post_id: string
+          blog_tag_id: string
+          created_at?: string
+        }
+        Update: {
+          blog_post_id?: string
+          blog_tag_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_post_tags_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_post_tags_blog_tag_id_fkey"
+            columns: ["blog_tag_id"]
+            isOneToOne: false
+            referencedRelation: "blog_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blog_posts: {
         Row: {
           author_id: string | null
+          category_id: string | null
           content: string
           created_at: string
           excerpt: string
@@ -33,6 +91,7 @@ export type Database = {
         }
         Insert: {
           author_id?: string | null
+          category_id?: string | null
           content: string
           created_at?: string
           excerpt: string
@@ -49,6 +108,7 @@ export type Database = {
         }
         Update: {
           author_id?: string | null
+          category_id?: string | null
           content?: string
           created_at?: string
           excerpt?: string
@@ -62,6 +122,35 @@ export type Database = {
           slug?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "blog_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
         }
         Relationships: []
       }

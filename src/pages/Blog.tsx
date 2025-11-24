@@ -3,9 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { SEO } from "@/components/SEO";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface BlogPost {
   id: string;
@@ -14,22 +16,87 @@ interface BlogPost {
   excerpt: string;
   featured_image_url: string | null;
   published_at: string;
+  blog_categories?: { name: string; slug: string } | null;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface Tag {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export default function Blog() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const selectedCategory = searchParams.get("category");
+  const selectedTag = searchParams.get("tag");
+
+  useEffect(() => {
+    fetchCategories();
+    fetchTags();
+  }, []);
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [selectedCategory, selectedTag]);
+
+  const fetchCategories = async () => {
+    const { data } = await supabase
+      .from("blog_categories")
+      .select("*")
+      .order("name");
+    if (data) setCategories(data);
+  };
+
+  const fetchTags = async () => {
+    const { data } = await supabase
+      .from("blog_tags")
+      .select("*")
+      .order("name");
+    if (data) setTags(data);
+  };
 
   const fetchPosts = async () => {
-    const { data, error } = await supabase
+    setLoading(true);
+    let query = supabase
       .from("blog_posts")
-      .select("id, title, slug, excerpt, featured_image_url, published_at")
+      .select("id, title, slug, excerpt, featured_image_url, published_at, blog_categories(name, slug)")
       .eq("is_published", true)
       .order("published_at", { ascending: false });
+
+    if (selectedCategory) {
+      const category = categories.find(c => c.slug === selectedCategory);
+      if (category) {
+        query = query.eq("category_id", category.id);
+      }
+    }
+
+    if (selectedTag) {
+      const tag = tags.find(t => t.slug === selectedTag);
+      if (tag) {
+        const { data: postTags } = await supabase
+          .from("blog_post_tags")
+          .select("blog_post_id")
+          .eq("blog_tag_id", tag.id);
+        
+        if (postTags) {
+          const postIds = postTags.map(pt => pt.blog_post_id);
+          query = query.in("id", postIds);
+        }
+      }
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error fetching blog posts:", error);
@@ -37,6 +104,10 @@ export default function Blog() {
       setPosts(data || []);
     }
     setLoading(false);
+  };
+
+  const clearFilters = () => {
+    setSearchParams({});
   };
 
   return (
@@ -50,11 +121,52 @@ export default function Blog() {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-6xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">Blog</h1>
             <p className="text-muted-foreground mb-8">
               Najnoviji članci i savjeti o računovodstvu i knjigovodstvu
             </p>
+
+            {/* Filters */}
+            <div className="mb-8 space-y-4">
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Kategorije</h3>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <Badge
+                      key={cat.id}
+                      variant={selectedCategory === cat.slug ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setSearchParams({ category: cat.slug })}
+                    >
+                      {cat.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold mb-2">Tagovi</h3>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <Badge
+                      key={tag.id}
+                      variant={selectedTag === tag.slug ? "default" : "secondary"}
+                      className="cursor-pointer"
+                      onClick={() => setSearchParams({ tag: tag.slug })}
+                    >
+                      {tag.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {(selectedCategory || selectedTag) && (
+                <Button variant="outline" size="sm" onClick={clearFilters}>
+                  Očisti filtere
+                </Button>
+              )}
+            </div>
 
             {loading ? (
               <div className="space-y-6">
@@ -93,10 +205,15 @@ export default function Blog() {
                         </div>
                       )}
                       <CardHeader>
-                        <CardTitle className="text-2xl">{post.title}</CardTitle>
-                        <CardDescription>
-                          {format(new Date(post.published_at), "dd.MM.yyyy.")}
-                        </CardDescription>
+                        <div className="flex justify-between items-start gap-4">
+                          <div className="flex-1">
+                            <CardTitle className="text-2xl">{post.title}</CardTitle>
+                            <CardDescription>
+                              {format(new Date(post.published_at), "dd.MM.yyyy.")}
+                              {post.blog_categories && ` • ${post.blog_categories.name}`}
+                            </CardDescription>
+                          </div>
+                        </div>
                       </CardHeader>
                       <CardContent>
                         <p className="text-muted-foreground">{post.excerpt}</p>

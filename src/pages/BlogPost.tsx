@@ -6,6 +6,8 @@ import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Helmet } from "react-helmet-async";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 interface BlogPost {
   id: string;
@@ -17,6 +19,8 @@ interface BlogPost {
   published_at: string;
   meta_description: string | null;
   meta_keywords: string | null;
+  blog_categories?: { name: string; slug: string } | null;
+  blog_post_tags?: Array<{ blog_tags: { name: string; slug: string } }>;
 }
 
 export default function BlogPost() {
@@ -34,7 +38,11 @@ export default function BlogPost() {
   const fetchPost = async () => {
     const { data, error } = await supabase
       .from("blog_posts")
-      .select("*")
+      .select(`
+        *,
+        blog_categories(name, slug),
+        blog_post_tags(blog_tags(name, slug))
+      `)
       .eq("slug", slug)
       .eq("is_published", true)
       .maybeSingle();
@@ -112,9 +120,25 @@ export default function BlogPost() {
           <article className="max-w-3xl mx-auto">
             <header className="mb-8">
               <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
-              <time className="text-muted-foreground">
-                {format(new Date(post.published_at), "dd.MM.yyyy.")}
-              </time>
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <time className="text-muted-foreground">
+                  {format(new Date(post.published_at), "dd.MM.yyyy.")}
+                </time>
+                {post.blog_categories && (
+                  <Link to={`/blog?category=${post.blog_categories.slug}`}>
+                    <Badge variant="secondary">{post.blog_categories.name}</Badge>
+                  </Link>
+                )}
+              </div>
+              {post.blog_post_tags && post.blog_post_tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {post.blog_post_tags.map((pt, idx) => (
+                    <Link key={idx} to={`/blog?tag=${pt.blog_tags.slug}`}>
+                      <Badge variant="outline">{pt.blog_tags.name}</Badge>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </header>
 
             {post.featured_image_url && (

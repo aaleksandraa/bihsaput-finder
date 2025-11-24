@@ -73,39 +73,99 @@ const MapView = () => {
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
-    // Add new markers
+    // Add new markers with custom modern icon
     profiles.forEach((profile) => {
       if (profile.latitude && profile.longitude) {
-        const marker = L.marker([parseFloat(profile.latitude), parseFloat(profile.longitude)])
-          .addTo(mapInstanceRef.current!);
+        // Create custom modern marker icon
+        const customIcon = L.divIcon({
+          className: 'custom-marker',
+          html: `
+            <div style="
+              position: relative;
+              width: 40px;
+              height: 40px;
+            ">
+              <div style="
+                position: absolute;
+                top: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 32px;
+                height: 32px;
+                background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
+                border-radius: 50% 50% 50% 0;
+                transform: translateX(-50%) rotate(-45deg);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                border: 3px solid white;
+              "></div>
+              <div style="
+                position: absolute;
+                top: 6px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 12px;
+                height: 12px;
+                background: white;
+                border-radius: 50%;
+                z-index: 1;
+              "></div>
+            </div>
+          `,
+          iconSize: [40, 40],
+          iconAnchor: [20, 40],
+          popupAnchor: [0, -40]
+        });
+
+        const marker = L.marker([parseFloat(profile.latitude), parseFloat(profile.longitude)], { 
+          icon: customIcon 
+        }).addTo(mapInstanceRef.current!);
 
         const popupContent = `
-          <div style="padding: 8px; min-width: 200px;">
-            <h3 style="font-weight: 600; margin-bottom: 4px;">
+          <div style="
+            padding: 16px;
+            min-width: 240px;
+            font-family: system-ui, -apple-system, sans-serif;
+          ">
+            <h3 style="
+              font-weight: 600;
+              font-size: 16px;
+              color: hsl(222.2 47.4% 11.2%);
+              margin-bottom: 8px;
+            ">
               ${profile.company_name || `${profile.first_name} ${profile.last_name}`}
             </h3>
             ${profile.short_description ? `
-              <p style="font-size: 14px; color: #666; margin-bottom: 8px;">
+              <p style="
+                font-size: 14px;
+                color: hsl(215.4 16.3% 46.9%);
+                margin-bottom: 12px;
+                line-height: 1.4;
+              ">
                 ${profile.short_description}
               </p>
             ` : ''}
             <a href="/profil/${profile.slug}" style="
               display: inline-block;
               width: 100%;
-              padding: 6px 12px;
-              background: hsl(222.2 47.4% 11.2%);
+              padding: 8px 16px;
+              background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
               color: white;
               text-align: center;
               border-radius: 6px;
               text-decoration: none;
               font-size: 14px;
-            ">
-              Pogledaj profil
+              font-weight: 500;
+              transition: all 0.2s;
+            " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+              Pogledaj profil →
             </a>
           </div>
         `;
 
-        marker.bindPopup(popupContent);
+        marker.bindPopup(popupContent, {
+          className: 'custom-popup',
+          maxWidth: 300
+        });
         markersRef.current.push(marker);
       }
     });

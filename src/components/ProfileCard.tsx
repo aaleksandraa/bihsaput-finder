@@ -13,9 +13,17 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
     <Card className="overflow-hidden hover:shadow-medium transition-all duration-300 animate-fade-in">
       <CardHeader className="pb-4">
         <div className="flex items-start gap-4">
-          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-            {profile.first_name?.[0]}{profile.last_name?.[0]}
-          </div>
+          {profile.profile_image_url ? (
+            <img 
+              src={profile.profile_image_url} 
+              alt={profile.company_name || `${profile.first_name} ${profile.last_name}`}
+              className="h-16 w-16 rounded-full object-cover flex-shrink-0 border-2 border-border"
+            />
+          ) : (
+            <div className="h-16 w-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+              {profile.first_name?.[0]}{profile.last_name?.[0]}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <h3 className="text-xl font-semibold truncate">
               {profile.company_name || `${profile.first_name} ${profile.last_name}`}

@@ -53,11 +53,35 @@ const Profile = () => {
   const fetchProfile = async () => {
     setLoading(true);
 
+    // Fetch profile data excluding sensitive fields for public access
     const { data: profileData, error } = await supabase
       .from('profiles')
       .select(`
-        *,
-        personal_city:cities!profiles_personal_city_id_fkey(name, postal_code),
+        id,
+        first_name,
+        last_name,
+        company_name,
+        business_type,
+        business_city_id,
+        short_description,
+        long_description,
+        profile_image_url,
+        slug,
+        website,
+        years_experience,
+        works_online,
+        works_locally_only,
+        has_physical_office,
+        latitude,
+        longitude,
+        professional_organizations,
+        linkedin_url,
+        facebook_url,
+        instagram_url,
+        is_active,
+        registration_completed,
+        created_at,
+        updated_at,
         business_city:cities!profiles_business_city_id_fkey(name, postal_code)
       `)
       .eq('slug', slug)

@@ -71,9 +71,42 @@ export const useProfile = (slug: string | undefined) => {
       if (!slug) throw new Error("No slug provided");
 
       const { data, error } = await supabase
-        .from("public_profiles")
-        .select("*")
+        .from("profiles")
+        .select(`
+          id,
+          first_name,
+          last_name,
+          company_name,
+          business_type,
+          business_city_id,
+          short_description,
+          long_description,
+          profile_image_url,
+          slug,
+          email,
+          phone,
+          website,
+          years_experience,
+          works_online,
+          works_locally_only,
+          has_physical_office,
+          latitude,
+          longitude,
+          professional_organizations,
+          linkedin_url,
+          facebook_url,
+          instagram_url,
+          google_maps_url,
+          business_street,
+          is_active,
+          registration_completed,
+          created_at,
+          updated_at,
+          business_city:cities!profiles_business_city_id_fkey(name, postal_code)
+        `)
         .eq("slug", slug)
+        .eq("is_active", true)
+        .eq("registration_completed", true)
         .maybeSingle();
 
       if (error) throw error;

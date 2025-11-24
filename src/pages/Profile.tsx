@@ -176,7 +176,8 @@ const Profile = () => {
           <div className="max-w-4xl mx-auto">
             {/* Mobile Layout */}
             <div className="sm:hidden">
-              <div className="flex gap-3 mb-4">
+              {/* Image with Name and Subtitle */}
+              <div className="flex gap-3 mb-3">
                 {/* Profile Image */}
                 <div className="flex-shrink-0">
                   {profile.profile_image_url ? (
@@ -192,79 +193,79 @@ const Profile = () => {
                   )}
                 </div>
                 
-                {/* Quick Info */}
-                <div className="flex-1 min-w-0 space-y-2">
-                  {/* Badges */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {profile.works_online && (
-                      <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                        <Globe className="h-3 w-3 mr-1" />
-                        Online
-                      </Badge>
-                    )}
-                    {profile.has_physical_office && (
-                      <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                        <Building2 className="h-3 w-3 mr-1" />
-                        Kancelarija
-                      </Badge>
-                    )}
-                    {profile.years_experience > 0 && (
-                      <Badge variant="outline" className="text-xs px-2 py-0.5">
-                        <Award className="h-3 w-3 mr-1" />
-                        {profile.years_experience} god.
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  {/* Social Media Icons */}
-                  {(profile.linkedin_url || profile.facebook_url || profile.instagram_url) && (
-                    <div className="flex gap-2">
-                      {profile.linkedin_url && (
-                        <a
-                          href={profile.linkedin_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
-                        >
-                          <Linkedin className="h-4 w-4" />
-                        </a>
-                      )}
-                      {profile.facebook_url && (
-                        <a
-                          href={profile.facebook_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
-                        >
-                          <Facebook className="h-4 w-4" />
-                        </a>
-                      )}
-                      {profile.instagram_url && (
-                        <a
-                          href={profile.instagram_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
-                        >
-                          <Instagram className="h-4 w-4" />
-                        </a>
-                      )}
-                    </div>
+                {/* Name and Description */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <h1 className="text-lg font-bold leading-tight mb-1">{displayName}</h1>
+                  {profile.short_description && (
+                    <p className="text-xs text-muted-foreground leading-snug line-clamp-2">
+                      {profile.short_description}
+                    </p>
                   )}
                 </div>
               </div>
               
-              {/* Name and Description */}
-              <div className="space-y-2 mb-4">
-                <h1 className="text-xl font-bold leading-tight">{displayName}</h1>
-                {profile.short_description && (
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {profile.short_description}
-                  </p>
+              {/* First Row: Badges and Social Media */}
+              <div className="flex items-center justify-between gap-3 mb-3">
+                {/* Badges */}
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.has_physical_office && (
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                      <Building2 className="h-3 w-3 mr-1" />
+                      Kancelarija
+                    </Badge>
+                  )}
+                  {profile.years_experience > 0 && (
+                    <Badge variant="outline" className="text-xs px-2 py-0.5">
+                      <Award className="h-3 w-3 mr-1" />
+                      {profile.years_experience} god.
+                    </Badge>
+                  )}
+                  {profile.works_online && (
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                      <Globe className="h-3 w-3 mr-1" />
+                      Online
+                    </Badge>
+                  )}
+                </div>
+                
+                {/* Social Media Icons */}
+                {(profile.linkedin_url || profile.facebook_url || profile.instagram_url) && (
+                  <div className="flex gap-1.5 flex-shrink-0">
+                    {profile.linkedin_url && (
+                      <a
+                        href={profile.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                      >
+                        <Linkedin className="h-4 w-4" />
+                      </a>
+                    )}
+                    {profile.facebook_url && (
+                      <a
+                        href={profile.facebook_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                      >
+                        <Facebook className="h-4 w-4" />
+                      </a>
+                    )}
+                    {profile.instagram_url && (
+                      <a
+                        href={profile.instagram_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
+                      >
+                        <Instagram className="h-4 w-4" />
+                      </a>
+                    )}
+                  </div>
                 )}
               </div>
               
-              {/* Contact Buttons */}
+              {/* Second Row: Contact Buttons */}
               <div className="flex gap-2">
                 {profile.email && (
                   <Button size="sm" className="flex-1" asChild>
@@ -360,11 +361,11 @@ const Profile = () => {
       </section>
 
       {/* Main Content */}
-      <div className="container px-4 py-8 md:py-12">
+      <div className="container px-4 py-8 md:py-12 max-w-full overflow-hidden">
         <div className="max-w-4xl mx-auto">
           <div className="grid lg:grid-cols-3 gap-4 md:gap-6">
             {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-6 min-w-0">
               {/* About */}
               {profile.long_description && (
                 <Card>

@@ -7,91 +7,82 @@ import ProfileCard from "@/components/ProfileCard";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { MapPin, ArrowLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const Search = () => {
   const [user, setUser] = useState<any>(null);
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
-  }, []);
+  const filters = {
+    searchTerm: searchParams.get('q') || '',
+    entity: searchParams.get('entity') || '',
+    city: searchParams.get('city') || '',
+    services: searchParams.getAll('service'),
+    nearMe: searchParams.get('nearMe') === 'true',
+    userLat: parseFloat(searchParams.get('userLat') || '0'),
+    userLng: parseFloat(searchParams.get('userLng') || '0'),
+  };
 
-  useEffect(() => {
-    const filters = {
-      searchTerm: searchParams.get('q') || '',
-      entity: searchParams.get('entity') || '',
-      city: searchParams.get('city') || '',
-      services: searchParams.getAll('service'),
-      nearMe: searchParams.get('nearMe') === 'true',
-      userLat: parseFloat(searchParams.get('userLat') || '0'),
-      userLng: parseFloat(searchParams.get('userLng') || '0'),
-    };
-    fetchProfiles(filters);
-  }, [searchParams]);
+  const { data: profiles = [], isLoading } = useQuery({
+    queryKey: ['search-profiles', filters],
+    queryFn: async () => {
+      let query = supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          company_name,
+          business_type,
+          business_city_id,
+          short_description,
+          profile_image_url,
+          slug,
+          email,
+          phone,
+          website,
+          years_experience,
+          works_online,
+          has_physical_office,
+          latitude,
+          longitude
+        `)
+        .eq('is_active', true)
+        .eq('registration_completed', true);
 
-  const fetchProfiles = async (filters: any) => {
-    setLoading(true);
-    // Query only necessary fields for profile cards and distance calculation
-    let query = supabase
-      .from('profiles')
-      .select(`
-        id,
-        first_name,
-        last_name,
-        company_name,
-        business_type,
-        business_city_id,
-        short_description,
-        profile_image_url,
-        slug,
-        email,
-        phone,
-        website,
-        years_experience,
-        works_online,
-        has_physical_office,
-        latitude,
-        longitude
-      `)
-      .eq('is_active', true)
-      .eq('registration_completed', true);
-
-    if (filters?.searchTerm) {
-      query = query.or(`first_name.ilike.%${filters.searchTerm}%,last_name.ilike.%${filters.searchTerm}%,company_name.ilike.%${filters.searchTerm}%`);
-    }
-    
-    if (filters?.entity && filters.entity !== 'all' && filters.entity !== '') {
-      const { data: entityData } = await supabase
-        .from('entities')
-        .select('id')
-        .eq('code', filters.entity)
-        .single();
+      if (filters?.searchTerm) {
+        query = query.or(`first_name.ilike.%${filters.searchTerm}%,last_name.ilike.%${filters.searchTerm}%,company_name.ilike.%${filters.searchTerm}%`);
+      }
       
-      if (entityData) {
-        const { data: cities } = await supabase
-          .from('cities')
+      if (filters?.entity && filters.entity !== 'all' && filters.entity !== '') {
+        const { data: entityData } = await supabase
+          .from('entities')
           .select('id')
-          .eq('entity_id', entityData.id);
+          .eq('code', filters.entity as any)
+          .single();
         
-        if (cities && cities.length > 0) {
-          const cityIds = cities.map(c => c.id);
-          query = query.in('business_city_id', cityIds);
+        if (entityData) {
+          const { data: cities } = await supabase
+            .from('cities')
+            .select('id')
+            .eq('entity_id', entityData.id);
+          
+          if (cities && cities.length > 0) {
+            const cityIds = cities.map(c => c.id);
+            query = query.in('business_city_id', cityIds);
+          }
         }
       }
-    }
 
-    if (filters?.city && filters.city !== 'all' && filters.city !== '') {
-      query = query.eq('business_city_id', filters.city);
-    }
+      if (filters?.city && filters.city !== 'all' && filters.city !== '') {
+        query = query.eq('business_city_id', filters.city);
+      }
 
-    const { data, error } = await query;
+      const { data, error } = await query;
 
-    if (!error && data) {
-      let filteredProfiles = data;
+      if (error) throw error;
+      
+      let filteredProfiles = data || [];
 
       // Filter by services if selected
       if (filters?.services && filters.services.length > 0) {
@@ -122,11 +113,9 @@ const Search = () => {
           .sort((a: any, b: any) => a.distance - b.distance);
       }
 
-      setProfiles(filteredProfiles);
-    }
-
-    setLoading(false);
-  };
+      return filteredProfiles;
+    },
+  });
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371; // Earth's radius in km
@@ -142,20 +131,20 @@ const Search = () => {
     return R * c;
   };
 
-  const handleSearch = (filters: any) => {
+  const handleSearch = (newFilters: any) => {
     const params = new URLSearchParams();
-    if (filters.searchTerm) params.set('q', filters.searchTerm);
-    if (filters.entity && filters.entity !== 'all') params.set('entity', filters.entity);
-    if (filters.city && filters.city !== 'all') params.set('city', filters.city);
-    filters.services?.forEach((service: string) => params.append('service', service));
-    if (filters.nearMe) {
+    if (newFilters.searchTerm) params.set('q', newFilters.searchTerm);
+    if (newFilters.entity && newFilters.entity !== 'all') params.set('entity', newFilters.entity);
+    if (newFilters.city && newFilters.city !== 'all') params.set('city', newFilters.city);
+    newFilters.services?.forEach((service: string) => params.append('service', service));
+    if (newFilters.nearMe) {
       params.set('nearMe', 'true');
-      params.set('userLat', filters.userLat.toString());
-      params.set('userLng', filters.userLng.toString());
+      params.set('userLat', newFilters.userLat.toString());
+      params.set('userLng', newFilters.userLng.toString());
     }
     
     window.history.pushState({}, '', `/search?${params.toString()}`);
-    fetchProfiles(filters);
+    window.location.search = params.toString();
   };
 
   const hasActiveFilters = searchParams.get('q') || searchParams.get('entity') || searchParams.has('service');
@@ -197,11 +186,11 @@ const Search = () => {
               {hasActiveFilters ? 'Rezultati pretrage' : 'Svi profili'}
             </h2>
             <p className="text-base text-muted-foreground font-medium">
-              {loading ? 'Pretraga u toku...' : `Pronađeno ${profiles.length} profil${profiles.length !== 1 ? 'a' : ''}`}
+              {isLoading ? 'Pretraga u toku...' : `Pronađeno ${profiles.length} profil${profiles.length !== 1 ? 'a' : ''}`}
             </p>
           </div>
 
-          {loading ? (
+          {isLoading ? (
             <div className="text-center py-20">
               <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
             </div>

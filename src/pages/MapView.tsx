@@ -7,6 +7,7 @@ import SearchFilters from "@/components/SearchFilters";
 import { Button } from "@/components/ui/button";
 import { MapPin, List } from "lucide-react";
 import 'leaflet/dist/leaflet.css';
+import { useQuery } from "@tanstack/react-query";
 
 // Fix for default marker icons
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -15,20 +16,41 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 const MapView = () => {
   const [user, setUser] = useState<any>(null);
-  const [profiles, setProfiles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
+
+  const { data: profiles = [] } = useQuery({
+    queryKey: ['map-profiles'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          first_name,
+          last_name,
+          company_name,
+          short_description,
+          slug,
+          email,
+          phone,
+          website,
+          latitude,
+          longitude
+        `)
+        .eq('is_active', true)
+        .eq('registration_completed', true)
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null);
+      
+      return data || [];
+    },
+  });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
     });
-  }, []);
-
-  useEffect(() => {
-    fetchProfiles();
   }, []);
 
   // Initialize map
@@ -116,7 +138,7 @@ const MapView = () => {
           popupAnchor: [0, -40]
         });
 
-        const marker = L.marker([parseFloat(profile.latitude), parseFloat(profile.longitude)], { 
+        const marker = L.marker([Number(profile.latitude), Number(profile.longitude)], { 
           icon: customIcon 
         }).addTo(mapInstanceRef.current!);
 
@@ -171,43 +193,13 @@ const MapView = () => {
     });
   }, [profiles]);
 
-  const fetchProfiles = async (filters?: any) => {
-    setLoading(true);
-    // Query only essential fields for map markers and popups
-    let query = supabase
-      .from('profiles')
-      .select(`
-        id,
-        first_name,
-        last_name,
-        company_name,
-        short_description,
-        profile_image_url,
-        slug,
-        email,
-        phone,
-        latitude,
-        longitude
-      `)
-      .eq('is_active', true)
-      .eq('registration_completed', true)
-      .not('latitude', 'is', null)
-      .not('longitude', 'is', null);
-
-    if (filters?.searchTerm) {
-      query = query.or(`first_name.ilike.%${filters.searchTerm}%,last_name.ilike.%${filters.searchTerm}%,company_name.ilike.%${filters.searchTerm}%`);
-    }
-
-    const { data, error } = await query;
-    setLoading(false);
-
-    if (!error && data) {
-      setProfiles(data);
-    }
-  };
-
   const handleSearch = (filters: any) => {
-    fetchProfiles(filters);
+    const params = new URLSearchParams();
+    if (filters.searchTerm) params.set('q', filters.searchTerm);
+    if (filters.entity && filters.entity !== 'all') params.set('entity', filters.entity);
+    if (filters.city && filters.city !== 'all') params.set('city', filters.city);
+    filters.services?.forEach((service: string) => params.append('service', service));
+    window.location.href = `/search?${params.toString()}`;
   };
 
   return (

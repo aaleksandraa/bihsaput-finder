@@ -1,40 +1,12 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { format } from "date-fns";
-
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  featured_image_url: string | null;
-  published_at: string;
-}
+import { useBlogPosts } from "@/hooks/useBlog";
 
 export const BlogSection = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-
-  useEffect(() => {
-    fetchFeaturedPosts();
-  }, []);
-
-  const fetchFeaturedPosts = async () => {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select("id, title, slug, excerpt, featured_image_url, published_at")
-      .eq("is_published", true)
-      .eq("show_on_homepage", true)
-      .order("published_at", { ascending: false })
-      .limit(3);
-
-    if (!error && data) {
-      setPosts(data);
-    }
-  };
+  const { data: posts = [] } = useBlogPosts({ featured: true });
 
   if (posts.length === 0) return null;
 

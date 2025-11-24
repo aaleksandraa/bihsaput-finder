@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,57 +6,22 @@ import { format } from "date-fns";
 import { Helmet } from "react-helmet-async";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  featured_image_url: string | null;
-  published_at: string;
-  meta_description: string | null;
-  meta_keywords: string | null;
-  blog_categories?: { name: string; slug: string } | null;
-  blog_post_tags?: Array<{ blog_tags: { name: string; slug: string } }>;
-}
+import { useBlogPost } from "@/hooks/useBlog";
+import { useEffect } from "react";
 
 export default function BlogPost() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [post, setPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
+  
+  const { data: post, isLoading, isError } = useBlogPost(slug);
 
   useEffect(() => {
-    if (slug) {
-      fetchPost();
-    }
-  }, [slug]);
-
-  const fetchPost = async () => {
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .select(`
-        *,
-        blog_categories(name, slug),
-        blog_post_tags(blog_tags(name, slug))
-      `)
-      .eq("slug", slug)
-      .eq("is_published", true)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error fetching blog post:", error);
+    if (isError) {
       navigate("/blog");
-    } else if (!data) {
-      navigate("/blog");
-    } else {
-      setPost(data);
     }
-    setLoading(false);
-  };
+  }, [isError, navigate]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <>
         <Header />

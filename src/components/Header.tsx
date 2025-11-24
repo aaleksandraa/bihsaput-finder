@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
 
 interface HeaderProps {
   user?: any;
@@ -11,6 +12,28 @@ interface HeaderProps {
 
 const Header = ({ user }: HeaderProps) => {
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      checkAdminStatus();
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user]);
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('user_roles')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    
+    setIsAdmin(!!data);
+  };
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -33,6 +56,14 @@ const Header = ({ user }: HeaderProps) => {
         <nav className="flex items-center gap-4">
           {user ? (
             <>
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="ghost" size="sm">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <Link to="/dashboard">
                 <Button variant="ghost" size="sm">
                   <User className="mr-2 h-4 w-4" />

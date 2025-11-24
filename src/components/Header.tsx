@@ -80,8 +80,7 @@ const Header = ({ user }: HeaderProps) => {
 
   return (
     <header 
-      className="sticky top-0 z-50 w-full border-b border-white/20 shadow-sm"
-      style={{ background: heroGradient || "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%)" }}
+      className="sticky top-0 z-50 w-full border-b border-white/20 shadow-sm bg-transparent backdrop-blur-md"
     >
       <div className="container px-4 md:px-6">
         <div className="flex h-16 md:h-20 items-center justify-between">

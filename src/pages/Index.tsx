@@ -13,8 +13,26 @@ const Index = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [mainCategories, setMainCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [heroGradient, setHeroGradient] = useState("");
 
   useEffect(() => {
+    // Generate random gradient on mount
+    const gradients = [
+      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", // Blue to purple
+      "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", // Pink to red
+      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)", // Light blue to cyan
+      "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)", // Green to turquoise
+      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", // Pink to yellow
+      "linear-gradient(135deg, #30cfd0 0%, #330867 100%)", // Cyan to deep purple
+      "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", // Mint to pink
+      "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)", // Coral to light pink
+      "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)", // Peach gradient
+      "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)", // Green to blue
+    ];
+    
+    const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
+    setHeroGradient(randomGradient);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null);
     });
@@ -71,7 +89,10 @@ const Index = () => {
       <Header user={user} />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-hero-gradient text-white py-24 md:py-32">
+      <section 
+        className="relative overflow-hidden text-white py-24 md:py-32 pb-64" 
+        style={{ background: heroGradient || "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
+      >
         <div className="container relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
             <div className="inline-block px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium mb-4 border border-white/20">
@@ -104,7 +125,7 @@ const Index = () => {
       </section>
 
       {/* Search Section */}
-      <section id="search" className="py-12 -mt-16 relative z-20">
+      <section id="search" className="py-12 -mt-52 relative z-20">
         <div className="container max-w-5xl">
           <div className="bg-card rounded-3xl shadow-large p-8 md:p-10 border border-border/50 backdrop-blur-sm animate-slide-in-right">
             <SearchFilters />

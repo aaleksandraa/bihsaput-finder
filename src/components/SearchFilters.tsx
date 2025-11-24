@@ -2,11 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Briefcase, ChevronDown } from "lucide-react";
+import { Search, MapPin, Briefcase, ChevronDown, Navigation } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -21,16 +22,29 @@ interface SearchFiltersProps {
 
 const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || "");
   const [entity, setEntity] = useState(searchParams.get('entity') || "");
+  const [selectedCity, setSelectedCity] = useState(searchParams.get('city') || "");
+  const [cities, setCities] = useState<any[]>([]);
   const [selectedServices, setSelectedServices] = useState<string[]>(searchParams.getAll('service'));
   const [serviceCategories, setServiceCategories] = useState<any[]>([]);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [loadingLocation, setLoadingLocation] = useState(false);
 
   useEffect(() => {
     fetchServiceCategories();
   }, []);
+
+  useEffect(() => {
+    if (entity && entity !== 'all') {
+      fetchCities(entity);
+    } else {
+      setCities([]);
+      setSelectedCity("");
+    }
+  }, [entity]);
 
   const fetchServiceCategories = async () => {
     const { data } = await supabase
@@ -48,6 +62,28 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
     }
   };
 
+  const fetchCities = async (entityCode: string) => {
+    if (!entityCode || entityCode === 'all') return;
+    
+    const { data: entityData } = await supabase
+      .from('entities')
+      .select('id')
+      .eq('code', entityCode as 'fbih' | 'rs' | 'brcko')
+      .single();
+    
+    if (entityData) {
+      const { data: citiesData } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('entity_id', entityData.id)
+        .order('name');
+      
+      if (citiesData) {
+        setCities(citiesData);
+      }
+    }
+  };
+
   const handleServiceToggle = (serviceId: string) => {
     setSelectedServices(prev => 
       prev.includes(serviceId) 
@@ -60,6 +96,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
     const filters = {
       searchTerm,
       entity,
+      city: selectedCity,
       services: selectedServices,
     };
 
@@ -71,14 +108,123 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
       const params = new URLSearchParams();
       if (searchTerm) params.set('q', searchTerm);
       if (entity && entity !== 'all') params.set('entity', entity);
+      if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity);
       selectedServices.forEach(service => params.append('service', service));
       
       navigate(`/search?${params.toString()}`);
     }
   };
 
+  const handleNearMe = () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Greška",
+        description: "Vaš pretraživač ne podržava geolokaciju",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        const filters = {
+          searchTerm,
+          entity,
+          city: selectedCity,
+          services: selectedServices,
+          nearMe: true,
+          userLat: latitude,
+          userLng: longitude,
+        };
+
+        if (onSearch) {
+          onSearch(filters);
+        } else {
+          const params = new URLSearchParams();
+          if (searchTerm) params.set('q', searchTerm);
+          if (entity && entity !== 'all') params.set('entity', entity);
+          if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity);
+          selectedServices.forEach(service => params.append('service', service));
+          params.set('nearMe', 'true');
+          params.set('userLat', latitude.toString());
+          params.set('userLng', longitude.toString());
+          
+          navigate(`/search?${params.toString()}`);
+        }
+
+        setLoadingLocation(false);
+        toast({
+          title: "Lokacija pronađena",
+          description: "Prikazujem profile u vašoj blizini",
+        });
+      },
+      (error) => {
+        setLoadingLocation(false);
+        toast({
+          title: "Greška",
+          description: "Nije moguće pristupiti vašoj lokaciji",
+          variant: "destructive",
+        });
+      }
+    );
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
+      {/* Service Categories Filter - Mobile First */}
+      <div className="md:hidden">
+        <Collapsible open={servicesOpen} onOpenChange={setServicesOpen}>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between">
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4" />
+                <span>Usluge {selectedServices.length > 0 && `(${selectedServices.length})`}</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="mt-3">
+            <div className="border rounded-lg p-4 bg-muted/50 max-h-[400px] overflow-y-auto">
+              <div className="space-y-4">
+                {serviceCategories.map((mainCategory) => (
+                  <div key={mainCategory.id} className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`mobile-${mainCategory.id}`}
+                        checked={selectedServices.includes(mainCategory.id)}
+                        onCheckedChange={() => handleServiceToggle(mainCategory.id)}
+                      />
+                      <Label htmlFor={`mobile-${mainCategory.id}`} className="font-semibold cursor-pointer">
+                        {mainCategory.name}
+                      </Label>
+                    </div>
+                    {mainCategory.subcategories?.length > 0 && (
+                      <div className="ml-6 space-y-2">
+                        {mainCategory.subcategories.map((sub: any) => (
+                          <div key={sub.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`mobile-${sub.id}`}
+                              checked={selectedServices.includes(sub.id)}
+                              onCheckedChange={() => handleServiceToggle(sub.id)}
+                            />
+                            <Label htmlFor={`mobile-${sub.id}`} className="text-sm cursor-pointer">
+                              {sub.name}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
+
       <div className="flex flex-col md:flex-row gap-3">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -110,8 +256,38 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
         </Button>
       </div>
 
-      {/* Service Categories Filter */}
-      <Collapsible open={servicesOpen} onOpenChange={setServicesOpen}>
+      {/* City Filter - Shows when entity is selected */}
+      {entity && entity !== 'all' && cities.length > 0 && (
+        <Select value={selectedCity} onValueChange={setSelectedCity}>
+          <SelectTrigger className="w-full">
+            <MapPin className="h-4 w-4 mr-2" />
+            <SelectValue placeholder="Grad" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[300px]">
+            <SelectItem value="all">Svi gradovi</SelectItem>
+            {cities.map((city) => (
+              <SelectItem key={city.id} value={city.id}>
+                {city.name} ({city.postal_code})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {/* Near Me Button */}
+      <Button 
+        onClick={handleNearMe} 
+        variant="outline" 
+        className="w-full"
+        disabled={loadingLocation}
+      >
+        <Navigation className="h-4 w-4 mr-2" />
+        {loadingLocation ? "Pronalaženje lokacije..." : "Prikaži blizu mene"}
+      </Button>
+
+      {/* Service Categories Filter - Desktop */}
+      <div className="hidden md:block">
+        <Collapsible open={servicesOpen} onOpenChange={setServicesOpen}>
         <CollapsibleTrigger asChild>
           <Button variant="outline" className="w-full justify-between">
             <div className="flex items-center gap-2">
@@ -158,6 +334,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
           </div>
         </CollapsibleContent>
       </Collapsible>
+      </div>
     </div>
   );
 };

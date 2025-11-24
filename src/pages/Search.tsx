@@ -23,7 +23,11 @@ const Search = () => {
     const filters = {
       searchTerm: searchParams.get('q') || '',
       entity: searchParams.get('entity') || '',
+      city: searchParams.get('city') || '',
       services: searchParams.getAll('service'),
+      nearMe: searchParams.get('nearMe') === 'true',
+      userLat: parseFloat(searchParams.get('userLat') || '0'),
+      userLng: parseFloat(searchParams.get('userLng') || '0'),
     };
     fetchProfiles(filters);
   }, [searchParams]);
@@ -57,6 +61,10 @@ const Search = () => {
       }
     }
 
+    if (filters?.city && filters.city !== 'all' && filters.city !== '') {
+      query = query.or(`personal_city_id.eq.${filters.city},business_city_id.eq.${filters.city}`);
+    }
+
     const { data, error } = await query;
 
     if (!error && data) {
@@ -70,17 +78,53 @@ const Search = () => {
         });
       }
 
+      // Sort by distance if nearMe is enabled
+      if (filters?.nearMe && filters?.userLat && filters?.userLng) {
+        filteredProfiles = filteredProfiles
+          .filter((profile: any) => profile.latitude && profile.longitude)
+          .map((profile: any) => {
+            const distance = calculateDistance(
+              filters.userLat,
+              filters.userLng,
+              profile.latitude,
+              profile.longitude
+            );
+            return { ...profile, distance };
+          })
+          .sort((a: any, b: any) => a.distance - b.distance);
+      }
+
       setProfiles(filteredProfiles);
     }
 
     setLoading(false);
   };
 
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371; // Earth's radius in km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
   const handleSearch = (filters: any) => {
     const params = new URLSearchParams();
     if (filters.searchTerm) params.set('q', filters.searchTerm);
-    if (filters.entity) params.set('entity', filters.entity);
+    if (filters.entity && filters.entity !== 'all') params.set('entity', filters.entity);
+    if (filters.city && filters.city !== 'all') params.set('city', filters.city);
     filters.services?.forEach((service: string) => params.append('service', service));
+    if (filters.nearMe) {
+      params.set('nearMe', 'true');
+      params.set('userLat', filters.userLat.toString());
+      params.set('userLng', filters.userLng.toString());
+    }
     
     window.history.pushState({}, '', `/search?${params.toString()}`);
     fetchProfiles(filters);

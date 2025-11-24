@@ -4,9 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import ImageUpload from "@/components/ImageUpload";
 import GalleryUpload from "@/components/GalleryUpload";
+import EditPersonalData from "@/components/profile-edit/EditPersonalData";
+import EditBusinessData from "@/components/profile-edit/EditBusinessData";
+import EditServices from "@/components/profile-edit/EditServices";
+import EditWorkingHours from "@/components/profile-edit/EditWorkingHours";
+import EditDescriptions from "@/components/profile-edit/EditDescriptions";
+import EditLocation from "@/components/profile-edit/EditLocation";
+import EditSocialMedia from "@/components/profile-edit/EditSocialMedia";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, Image as ImageIcon } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, User, Briefcase, Clock, MapPin, Globe, FileText, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -100,85 +108,190 @@ const Dashboard = () => {
     );
   }
 
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header user={user} />
+        <div className="container py-12">
+          <div className="max-w-4xl mx-auto text-center">
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground mb-4">Nemate profil. Kreirajte ga sada!</p>
+                <Button className="bg-hero-gradient" onClick={() => navigate("/registracija")}>
+                  Kreiraj profil
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header user={user} />
-      <div className="container py-12">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="container py-8">
+        <div className="max-w-6xl mx-auto space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">
-              Dobrodošli, {profile?.first_name || 'Korisniče'}!
+              Uređivanje profila
             </h1>
+            {profile.slug && (
+              <Button variant="outline" onClick={() => navigate(`/profil/${profile.slug}`)}>
+                Pogledaj javni profil
+              </Button>
+            )}
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Moj profil
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {profile ? (
-                <div className="space-y-2">
-                  <p><strong>Ime:</strong> {profile.first_name} {profile.last_name}</p>
-                  <p><strong>Email:</strong> {profile.email}</p>
-                  {profile.phone && <p><strong>Telefon:</strong> {profile.phone}</p>}
-                  
-                  {!profile.registration_completed && (
-                    <div className="mt-4 p-4 bg-accent rounded-lg">
-                      <p className="text-sm mb-2">Vaš profil nije potpun. Dovršite registraciju da biste postali vidljivi u pretragama.</p>
-                      <Button size="sm" className="bg-hero-gradient" onClick={() => navigate("/registracija")}>
-                        Dovrši profil
-                      </Button>
-                    </div>
-                  )}
-
-                  {profile.slug && (
-                    <div className="mt-4">
-                      <Button variant="outline" onClick={() => navigate(`/profil/${profile.slug}`)}>
-                        Pogledaj javni profil
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <p className="text-muted-foreground mb-4">Nemate profil. Kreirajte ga sada!</p>
-                  <Button className="bg-hero-gradient" onClick={() => navigate("/registracija")}>
-                    Kreiraj profil
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {profile && profile.registration_completed && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5" />
-                  Slike i galerija
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <ImageUpload
-                  bucket="profile-images"
-                  path={user.id}
-                  currentImageUrl={profile.profile_image_url}
-                  onUploadComplete={handleProfileImageUpload}
-                  label="Profilna slika / Logo"
-                />
-
-                <GalleryUpload
-                  profileId={user.id}
-                  maxImages={5}
-                  currentImages={galleryImages}
-                  onUploadComplete={fetchGallery}
-                />
+          {!profile.registration_completed && (
+            <Card className="border-accent bg-accent/10">
+              <CardContent className="pt-6">
+                <p className="text-sm mb-2">Vaš profil nije potpun. Dovršite registraciju da biste postali vidljivi u pretragama.</p>
+                <Button size="sm" className="bg-hero-gradient" onClick={() => navigate("/registracija")}>
+                  Dovrši profil
+                </Button>
               </CardContent>
             </Card>
           )}
+
+          <Tabs defaultValue="personal" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+              <TabsTrigger value="personal">
+                <User className="h-4 w-4 mr-2" />
+                Lični
+              </TabsTrigger>
+              <TabsTrigger value="business">
+                <Briefcase className="h-4 w-4 mr-2" />
+                Poslovni
+              </TabsTrigger>
+              <TabsTrigger value="services">
+                <Briefcase className="h-4 w-4 mr-2" />
+                Usluge
+              </TabsTrigger>
+              <TabsTrigger value="hours">
+                <Clock className="h-4 w-4 mr-2" />
+                Radno vrijeme
+              </TabsTrigger>
+              <TabsTrigger value="location">
+                <MapPin className="h-4 w-4 mr-2" />
+                Lokacija
+              </TabsTrigger>
+              <TabsTrigger value="social">
+                <Globe className="h-4 w-4 mr-2" />
+                Društvene mreže
+              </TabsTrigger>
+              <TabsTrigger value="descriptions">
+                <FileText className="h-4 w-4 mr-2" />
+                Opisi
+              </TabsTrigger>
+              <TabsTrigger value="media">
+                <ImageIcon className="h-4 w-4 mr-2" />
+                Slike
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="personal">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Lični podaci</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditPersonalData profile={profile} onUpdate={fetchProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="business">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Poslovni podaci</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditBusinessData profile={profile} onUpdate={fetchProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="services">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Usluge koje nudite</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditServices profile={profile} onUpdate={fetchProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="hours">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Radno vrijeme</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditWorkingHours profile={profile} onUpdate={fetchProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="location">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dostupnost i lokacija</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditLocation profile={profile} onUpdate={fetchProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="social">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Društvene mreže</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditSocialMedia profile={profile} onUpdate={fetchProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="descriptions">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Opisi i iskustvo</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditDescriptions profile={profile} onUpdate={fetchProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="media">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Slike i galerija</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <ImageUpload
+                    bucket="profile-images"
+                    path={user.id}
+                    currentImageUrl={profile.profile_image_url}
+                    onUploadComplete={handleProfileImageUpload}
+                    label="Profilna slika / Logo"
+                  />
+
+                  <GalleryUpload
+                    profileId={user.id}
+                    maxImages={5}
+                    currentImages={galleryImages}
+                    onUploadComplete={fetchGallery}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
 import ProfileCard from "@/components/ProfileCard";
 import { SEO } from "@/components/SEO";
+import { BlogSection } from "@/components/BlogSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Search, TrendingUp, Briefcase, ChevronRight } from "lucide-react";
@@ -280,6 +281,9 @@ const Index = () => {
           )}
         </div>
       </section>
+
+      {/* Blog Section */}
+      <BlogSection />
 
       {/* CTA Section */}
       <section className="py-20 md:py-28 bg-gradient-to-br from-primary via-primary to-primary/90 text-white relative overflow-hidden">

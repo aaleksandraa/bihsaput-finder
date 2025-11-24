@@ -14,6 +14,8 @@ import Admin from "./pages/Admin";
 import MapView from "./pages/MapView";
 import Search from "./pages/Search";
 import ServiceCategory from "./pages/ServiceCategory";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,8 @@ const App = () => (
           <Route path="/registracija" element={<Registration />} />
           <Route path="/profil/:slug" element={<Profile />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/sitemap.xml" element={<SitemapRedirect />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -82,7 +82,7 @@ const Header = ({ user }: HeaderProps) => {
   };
 
   return (
-    <header className={`relative z-10 w-full border-b ${isHomePage ? 'border-white/10' : 'border-border bg-gray-900'}`}>
+    <header className={`relative z-10 w-full border-b ${isHomePage ? 'border-white/10' : 'border-border bg-white'}`}>
       <div className="container px-4 md:px-6">
         <div className="flex h-16 md:h-20 items-center justify-between">
           {/* Logo */}

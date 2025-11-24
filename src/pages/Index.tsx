@@ -59,11 +59,22 @@ const Index = () => {
     }
 
     const { data, error } = await query;
-    setLoading(false);
 
     if (!error && data) {
-      setProfiles(data);
+      let filteredProfiles = data;
+
+      // Filter by services if selected
+      if (filters?.services && filters.services.length > 0) {
+        filteredProfiles = data.filter((profile: any) => {
+          const profileServiceIds = profile.profile_services?.map((ps: any) => ps.service_id) || [];
+          return filters.services.some((serviceId: string) => profileServiceIds.includes(serviceId));
+        });
+      }
+
+      setProfiles(filteredProfiles);
     }
+
+    setLoading(false);
   };
 
   const handleSearch = (filters: any) => {

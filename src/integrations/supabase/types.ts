@@ -563,18 +563,21 @@ export type Database = {
           created_at: string | null
           google_analytics_id: string | null
           id: string
+          show_availability_filter: boolean | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           google_analytics_id?: string | null
           id?: string
+          show_availability_filter?: boolean | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           google_analytics_id?: string | null
           id?: string
+          show_availability_filter?: boolean | null
           updated_at?: string | null
         }
         Relationships: []

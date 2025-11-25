@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Briefcase, ChevronDown, Navigation } from "lucide-react";
+import { Search, MapPin, Briefcase, ChevronDown, Navigation, UserCheck } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -32,10 +32,24 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
   const [serviceCategories, setServiceCategories] = useState<any[]>([]);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [onlyAvailable, setOnlyAvailable] = useState(searchParams.get('available') === 'true');
+  const [showAvailabilityFilter, setShowAvailabilityFilter] = useState(false);
 
   useEffect(() => {
     fetchServiceCategories();
+    fetchSiteSettings();
   }, []);
+
+  const fetchSiteSettings = async () => {
+    const { data } = await supabase
+      .from('site_settings')
+      .select('show_availability_filter')
+      .single();
+    
+    if (data) {
+      setShowAvailabilityFilter(data.show_availability_filter || false);
+    }
+  };
 
   useEffect(() => {
     if (entity && entity !== 'all') {
@@ -98,6 +112,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
       entity,
       city: selectedCity,
       services: selectedServices,
+      onlyAvailable,
     };
 
     // If onSearch is provided, call it (for Search page)
@@ -110,6 +125,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
       if (entity && entity !== 'all') params.set('entity', entity);
       if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity);
       selectedServices.forEach(service => params.append('service', service));
+      if (onlyAvailable) params.set('available', 'true');
       
       navigate(`/search?${params.toString()}`);
     }
@@ -135,6 +151,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
           entity,
           city: selectedCity,
           services: selectedServices,
+          onlyAvailable,
           nearMe: true,
           userLat: latitude,
           userLng: longitude,
@@ -148,6 +165,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
           if (entity && entity !== 'all') params.set('entity', entity);
           if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity);
           selectedServices.forEach(service => params.append('service', service));
+          if (onlyAvailable) params.set('available', 'true');
           params.set('nearMe', 'true');
           params.set('userLat', latitude.toString());
           params.set('userLng', longitude.toString());
@@ -268,6 +286,23 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
           </Select>
         )}
       </div>
+
+      {/* Availability Filter - Only shown if enabled by admin */}
+      {showAvailabilityFilter && (
+        <div className="flex items-center space-x-3 p-4 border rounded-lg bg-muted/30">
+          <Checkbox
+            id="only-available"
+            checked={onlyAvailable}
+            onCheckedChange={(checked) => setOnlyAvailable(checked as boolean)}
+          />
+          <div className="flex items-center gap-2">
+            <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <Label htmlFor="only-available" className="cursor-pointer font-medium text-sm">
+              Samo dostupni za nove klijente
+            </Label>
+          </div>
+        </div>
+      )}
 
       {/* Near Me Button */}
       <Button 

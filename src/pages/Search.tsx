@@ -18,6 +18,7 @@ const Search = () => {
     entity: searchParams.get('entity') || '',
     city: searchParams.get('city') || '',
     services: searchParams.getAll('service'),
+    onlyAvailable: searchParams.get('available') === 'true',
     nearMe: searchParams.get('nearMe') === 'true',
     userLat: parseFloat(searchParams.get('userLat') || '0'),
     userLng: parseFloat(searchParams.get('userLng') || '0'),
@@ -45,10 +46,15 @@ const Search = () => {
           works_online,
           has_physical_office,
           latitude,
-          longitude
+          longitude,
+          accepting_new_clients
         `)
         .eq('is_active', true)
         .eq('registration_completed', true);
+
+      if (filters?.onlyAvailable) {
+        query = query.eq('accepting_new_clients', true);
+      }
 
       if (filters?.searchTerm) {
         query = query.or(`first_name.ilike.%${filters.searchTerm}%,last_name.ilike.%${filters.searchTerm}%,company_name.ilike.%${filters.searchTerm}%`);
@@ -137,6 +143,7 @@ const Search = () => {
     if (newFilters.entity && newFilters.entity !== 'all') params.set('entity', newFilters.entity);
     if (newFilters.city && newFilters.city !== 'all') params.set('city', newFilters.city);
     newFilters.services?.forEach((service: string) => params.append('service', service));
+    if (newFilters.onlyAvailable) params.set('available', 'true');
     if (newFilters.nearMe) {
       params.set('nearMe', 'true');
       params.set('userLat', newFilters.userLat.toString());

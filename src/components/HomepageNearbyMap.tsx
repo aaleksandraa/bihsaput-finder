@@ -154,8 +154,8 @@ const HomepageNearbyMap = () => {
     if (!mapRef.current || !userLocation || profiles.length === 0) return;
 
     if (!mapInstanceRef.current) {
-      // Create map centered on user location
-      mapInstanceRef.current = L.map(mapRef.current).setView([userLocation.lat, userLocation.lng], 10);
+      // Create map centered on user location with closer zoom (zoom 13 ≈ 5-10km radius view)
+      mapInstanceRef.current = L.map(mapRef.current).setView([userLocation.lat, userLocation.lng], 13);
 
       // Add tile layer
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

@@ -219,7 +219,7 @@ const Header = ({ user }: HeaderProps) => {
                   <>
                     <div className="my-2 border-t border-white/20" />
                     <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 hover:text-white" size="lg">
+                      <Button className="w-full bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm" size="lg">
                         Prijava
                       </Button>
                     </Link>

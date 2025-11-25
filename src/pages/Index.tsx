@@ -6,6 +6,7 @@ import SearchFilters from "@/components/SearchFilters";
 import ProfileCard from "@/components/ProfileCard";
 import { SEO } from "@/components/SEO";
 import { BlogSection } from "@/components/BlogSection";
+import HomepageNearbyMap from "@/components/HomepageNearbyMap";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Search, TrendingUp, Briefcase, ChevronRight } from "lucide-react";
@@ -284,6 +285,9 @@ const Index = () => {
           )}
         </div>
       </section>
+
+      {/* Nearby Map Section */}
+      <HomepageNearbyMap />
 
       {/* Blog Section */}
       <BlogSection />

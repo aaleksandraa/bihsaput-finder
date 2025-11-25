@@ -34,7 +34,13 @@ import {
 } from "lucide-react";
 import { Loader2 } from "lucide-react";
 
-const DAYS = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'];
+const DAYS = ['Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota', 'Nedjelja'];
+
+// Format time to remove seconds (HH:MM:SS -> HH:MM)
+const formatTime = (time: string) => {
+  if (!time) return '';
+  return time.substring(0, 5);
+};
 
 const Profile = () => {
   const { slug } = useParams();
@@ -518,14 +524,23 @@ const Profile = () => {
                     </h2>
                     
                     <div className="space-y-2">
-                      {workingHours.map((hour: any) => (
-                        <div key={hour.id} className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">{DAYS[hour.day_of_week]}</span>
-                          <span className="font-medium">
-                            {hour.is_closed ? 'Zatvoreno' : `${hour.start_time} - ${hour.end_time}`}
-                          </span>
-                        </div>
-                      ))}
+                      {workingHours
+                        .sort((a: any, b: any) => {
+                          const dayA = a.day_of_week === 0 ? 6 : a.day_of_week - 1;
+                          const dayB = b.day_of_week === 0 ? 6 : b.day_of_week - 1;
+                          return dayA - dayB;
+                        })
+                        .map((hour: any) => {
+                          const dayIndex = hour.day_of_week === 0 ? 6 : hour.day_of_week - 1;
+                          return (
+                            <div key={hour.id} className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">{DAYS[dayIndex]}</span>
+                              <span className="font-medium">
+                                {hour.is_closed ? 'Zatvoreno' : `${formatTime(hour.start_time)} - ${formatTime(hour.end_time)}`}
+                              </span>
+                            </div>
+                          );
+                        })}
                     </div>
                   </CardContent>
                 </Card>
@@ -585,14 +600,23 @@ const Profile = () => {
                     </h3>
                     
                     <div className="space-y-2">
-                      {workingHours.map((hour: any) => (
-                        <div key={hour.id} className="flex justify-between text-sm py-2 border-b border-border/50 last:border-0">
-                          <span className="font-medium">{DAYS[hour.day_of_week]}</span>
-                          <span className="text-muted-foreground">
-                            {hour.is_closed ? 'Neradni dan' : `${hour.start_time} - ${hour.end_time}`}
-                          </span>
-                        </div>
-                      ))}
+                      {workingHours
+                        .sort((a: any, b: any) => {
+                          const dayA = a.day_of_week === 0 ? 6 : a.day_of_week - 1;
+                          const dayB = b.day_of_week === 0 ? 6 : b.day_of_week - 1;
+                          return dayA - dayB;
+                        })
+                        .map((hour: any) => {
+                          const dayIndex = hour.day_of_week === 0 ? 6 : hour.day_of_week - 1;
+                          return (
+                            <div key={hour.id} className="flex justify-between text-sm py-2 border-b border-border/50 last:border-0">
+                              <span className="font-medium">{DAYS[dayIndex]}</span>
+                              <span className="text-muted-foreground">
+                                {hour.is_closed ? 'Neradni dan' : `${formatTime(hour.start_time)} - ${formatTime(hour.end_time)}`}
+                              </span>
+                            </div>
+                          );
+                        })}
                     </div>
                   </CardContent>
                 </Card>

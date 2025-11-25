@@ -177,8 +177,8 @@ const Profile = () => {
                 </div>
               </div>
               
-              {/* First Row: Badges and Social Media */}
-              <div className="flex items-center justify-between gap-3 mb-3">
+              {/* Badges Row */}
+              <div className="flex items-center gap-3 mb-3">
                 {/* Badges */}
                 <div className="flex flex-wrap gap-1.5">
                   {(profile as any).accepting_new_clients !== false && (
@@ -213,41 +213,6 @@ const Profile = () => {
                   )}
                 </div>
                 
-                {/* Social Media Icons */}
-                {(profile.linkedin_url || profile.facebook_url || profile.instagram_url) && (
-                  <div className="flex gap-1.5 flex-shrink-0">
-                    {profile.linkedin_url && (
-                      <a
-                        href={profile.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
-                      >
-                        <Linkedin className="h-4 w-4" />
-                      </a>
-                    )}
-                    {profile.facebook_url && (
-                      <a
-                        href={profile.facebook_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
-                      >
-                        <Facebook className="h-4 w-4" />
-                      </a>
-                    )}
-                    {profile.instagram_url && (
-                      <a
-                        href={profile.instagram_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 rounded-md bg-muted hover:bg-muted/80 transition-colors"
-                      >
-                        <Instagram className="h-4 w-4" />
-                      </a>
-                    )}
-                  </div>
-                )}
               </div>
               
               {/* Second Row: Contact Buttons */}

@@ -64,11 +64,12 @@ const Step7References = ({ data, onChange }: Step7Props) => {
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label>Lista klijenata i referenci</Label>
-          <Button type="button" onClick={addReference} size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Dodaj referencu
+        <div className="flex items-center justify-between gap-2">
+          <Label className="text-sm sm:text-base">Lista klijenata i referenci</Label>
+          <Button type="button" onClick={addReference} size="sm" variant="outline" className="whitespace-nowrap">
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Dodaj referencu</span>
+            <span className="sm:hidden">Dodaj</span>
           </Button>
         </div>
 

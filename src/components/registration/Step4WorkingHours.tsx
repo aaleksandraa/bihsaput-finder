@@ -45,36 +45,38 @@ const Step4WorkingHours = ({ data, onChange }: Step4Props) => {
           const dayData = workingHours[day.value] || { is_closed: false };
           
           return (
-            <div key={day.value} className="flex items-center gap-4 p-4 border rounded-lg">
-              <div className="w-32">
-                <Label className="font-semibold">{day.label}</Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id={`closed-${day.value}`}
-                  checked={dayData.is_closed}
-                  onCheckedChange={(checked) => handleDayChange(day.value, 'is_closed', checked)}
-                />
-                <Label htmlFor={`closed-${day.value}`} className="text-sm cursor-pointer">
-                  Ne radim
-                </Label>
+            <div key={day.value} className="p-4 border rounded-lg space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <Label className="font-semibold text-sm sm:text-base">{day.label}</Label>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`closed-${day.value}`}
+                    checked={dayData.is_closed}
+                    onCheckedChange={(checked) => handleDayChange(day.value, 'is_closed', checked)}
+                  />
+                  <Label htmlFor={`closed-${day.value}`} className="text-sm cursor-pointer whitespace-nowrap">
+                    Ne radim
+                  </Label>
+                </div>
               </div>
 
               {!dayData.is_closed && (
-                <div className="flex items-center gap-2 flex-1">
+                <div className="flex items-center gap-2">
                   <Input
                     type="time"
                     value={dayData.start_time || ''}
                     onChange={(e) => handleDayChange(day.value, 'start_time', e.target.value)}
-                    className="w-32"
+                    className="flex-1 min-w-0"
+                    step="3600"
                   />
                   <span className="text-muted-foreground">-</span>
                   <Input
                     type="time"
                     value={dayData.end_time || ''}
                     onChange={(e) => handleDayChange(day.value, 'end_time', e.target.value)}
-                    className="w-32"
+                    className="flex-1 min-w-0"
+                    step="3600"
                   />
                 </div>
               )}

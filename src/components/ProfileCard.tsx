@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Mail, Phone, Globe, ExternalLink } from "lucide-react";
+import { MapPin, Mail, Phone, Globe, ExternalLink, UserCheck, UserX } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface ProfileCardProps {
@@ -43,6 +43,18 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
       
       <CardContent className="space-y-5 flex-1 flex flex-col">
         <div className="flex flex-wrap gap-2">
+          {(profile as any).accepting_new_clients !== false && (
+            <Badge variant="secondary" className="text-xs px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+              <UserCheck className="h-3 w-3 mr-1" />
+              Dostupan
+            </Badge>
+          )}
+          {(profile as any).accepting_new_clients === false && (
+            <Badge variant="secondary" className="text-xs px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100">
+              <UserX className="h-3 w-3 mr-1" />
+              Nedostupan
+            </Badge>
+          )}
           {profile.works_online && (
             <Badge variant="secondary" className="text-xs px-3 py-1">Online</Badge>
           )}

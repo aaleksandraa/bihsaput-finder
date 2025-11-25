@@ -83,6 +83,52 @@ const CityPage = () => {
     enabled: !!city?.id,
   });
 
+  // Fetch available services in this city
+  const { data: availableServices } = useQuery({
+    queryKey: ["city-services", city?.id],
+    queryFn: async () => {
+      if (!city?.id || !profiles || profiles.length === 0) return [];
+
+      const profileIds = profiles.map(p => p.id);
+
+      // Get all services offered by profiles in this city
+      const { data: profileServices, error } = await supabase
+        .from("profile_services")
+        .select(`
+          service_id,
+          service_categories (
+            id,
+            name,
+            description,
+            parent_id
+          )
+        `)
+        .in("profile_id", profileIds);
+
+      if (error) throw error;
+
+      // Group services and count occurrences
+      const serviceMap = new Map();
+      profileServices?.forEach((ps: any) => {
+        const service = ps.service_categories;
+        if (service) {
+          if (serviceMap.has(service.id)) {
+            serviceMap.get(service.id).count++;
+          } else {
+            serviceMap.set(service.id, {
+              ...service,
+              count: 1
+            });
+          }
+        }
+      });
+
+      return Array.from(serviceMap.values())
+        .sort((a, b) => b.count - a.count);
+    },
+    enabled: !!city?.id && !!profiles && profiles.length > 0,
+  });
+
   // Initialize map
   useEffect(() => {
     if (!mapRef.current || !profiles || profiles.length === 0) return;
@@ -208,10 +254,46 @@ const CityPage = () => {
           </div>
         </section>
 
+        {/* Available Services Section */}
+        {availableServices && availableServices.length > 0 && (
+          <section className="py-12 px-4 bg-muted/30">
+            <div className="container mx-auto max-w-6xl">
+              <h2 className="text-3xl font-bold mb-6">Dostupne usluge u {cityName}</h2>
+              <p className="text-muted-foreground mb-8">
+                Pregled usluga koje nude knjigovođe u gradu {cityName}. Kliknite na uslugu da vidite profesionalce specijalizovane za tu oblast.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {availableServices.map((service: any) => (
+                  <Card 
+                    key={service.id}
+                    className="hover:shadow-lg transition-all cursor-pointer"
+                    onClick={() => navigate(`/usluge/${service.id}/${city.postal_code}`)}
+                  >
+                    <div className="p-6">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-lg">{service.name}</h3>
+                        <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                          {service.count}
+                        </span>
+                      </div>
+                      {service.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {service.description}
+                        </p>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Profiles Grid */}
         {profiles && profiles.length > 0 && (
           <section className="py-12 px-4">
             <div className="container mx-auto max-w-6xl">
+              <h2 className="text-3xl font-bold mb-6">Svi knjigovođe u {cityName}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 {profiles.map((profile) => (
                   <ProfileCard key={profile.id} profile={profile} />

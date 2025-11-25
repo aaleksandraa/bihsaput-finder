@@ -13,6 +13,7 @@ export const GASettings = () => {
   const [saving, setSaving] = useState(false);
   const [gaId, setGaId] = useState('');
   const [showAvailabilityFilter, setShowAvailabilityFilter] = useState(false);
+  const [showMapSearch, setShowMapSearch] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -22,13 +23,14 @@ export const GASettings = () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('google_analytics_id, show_availability_filter')
+        .select('google_analytics_id, show_availability_filter, show_map_search')
         .single();
 
       if (error) throw error;
 
       setGaId(data?.google_analytics_id || '');
       setShowAvailabilityFilter(data?.show_availability_filter || false);
+      setShowMapSearch(data?.show_map_search || false);
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast.error('Greška pri učitavanju postavki');
@@ -44,7 +46,8 @@ export const GASettings = () => {
         .from('site_settings')
         .update({ 
           google_analytics_id: gaId || null,
-          show_availability_filter: showAvailabilityFilter
+          show_availability_filter: showAvailabilityFilter,
+          show_map_search: showMapSearch
         })
         .eq('id', (await supabase.from('site_settings').select('id').single()).data?.id);
 
@@ -122,6 +125,32 @@ export const GASettings = () => {
               </Label>
               <p className="text-sm text-muted-foreground">
                 Omogućava korisnicima da filtriraju rezultate pretrage i vide samo knjigovođe koji trenutno primaju nove klijente
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Mapa na početnoj stranici</CardTitle>
+          <CardDescription>
+            Kontrolišite funkcionalnosti mape profesionalaca u blizini
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="show-map-search"
+              checked={showMapSearch}
+              onCheckedChange={(checked) => setShowMapSearch(checked as boolean)}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="show-map-search" className="cursor-pointer font-medium">
+                Prikaži pretragu po imenu na mapi
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Omogućava korisnicima da pretražuju profesionalce po imenu direktno na mapi u realnom vremenu
               </p>
             </div>
           </div>

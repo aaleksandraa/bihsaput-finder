@@ -5,8 +5,9 @@ import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 import Step1PersonalData from "@/components/registration/Step1PersonalData";
 import Step2BusinessData from "@/components/registration/Step2BusinessData";
@@ -32,6 +33,7 @@ const STEPS = [
 
 const Registration = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [user, setUser] = useState<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<any>({});
@@ -234,30 +236,61 @@ const Registration = () => {
           </div>
 
           <div className="grid lg:grid-cols-4 gap-4 lg:gap-6">
-            {/* Steps sidebar - horizontal scroll on mobile, vertical on desktop */}
+            {/* Steps sidebar - simplified on mobile, vertical on desktop */}
             <div className="lg:col-span-1">
-              <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
-                {STEPS.map((step) => (
-                  <div
-                    key={step.number}
-                    className={`flex items-center gap-2 p-2 rounded-lg transition-colors whitespace-nowrap flex-shrink-0 ${
-                      step.number === currentStep
-                        ? 'bg-primary text-primary-foreground'
-                        : step.number < currentStep
-                        ? 'bg-success/10 text-success'
-                        : 'bg-muted/50 text-muted-foreground'
-                    }`}
-                  >
-                    <div className="hidden lg:flex items-center justify-center h-6 w-6 rounded-full border-2 flex-shrink-0">
-                      {step.number < currentStep ? (
-                        <Check className="h-4 w-4" />
-                      ) : (
-                        <span className="text-sm font-semibold">{step.number}</span>
-                      )}
+              <div className="flex lg:flex-col gap-2">
+                {isMobile ? (
+                  // Mobile: Show only current and next step with arrow indicator
+                  <>
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-primary text-primary-foreground flex-1">
+                      <div className="flex items-center justify-center h-6 w-6 rounded-full border-2 flex-shrink-0">
+                        <span className="text-sm font-semibold">{currentStep}</span>
+                      </div>
+                      <span className="text-sm font-medium">{STEPS[currentStep - 1].title}</span>
                     </div>
-                    <span className="text-sm font-medium">{step.title}</span>
-                  </div>
-                ))}
+                    {currentStep < STEPS.length && (
+                      <>
+                        <div className="flex items-center justify-center flex-shrink-0">
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 text-muted-foreground flex-1">
+                          <div className="flex items-center justify-center h-6 w-6 rounded-full border-2 flex-shrink-0">
+                            <span className="text-sm font-semibold">{currentStep + 1}</span>
+                          </div>
+                          <span className="text-sm font-medium">{STEPS[currentStep].title}</span>
+                        </div>
+                      </>
+                    )}
+                    {currentStep < STEPS.length - 1 && (
+                      <div className="flex items-center justify-center flex-shrink-0">
+                        <MoreHorizontal className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  // Desktop: Show all steps vertically
+                  STEPS.map((step) => (
+                    <div
+                      key={step.number}
+                      className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+                        step.number === currentStep
+                          ? 'bg-primary text-primary-foreground'
+                          : step.number < currentStep
+                          ? 'bg-success/10 text-success'
+                          : 'bg-muted/50 text-muted-foreground'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center h-6 w-6 rounded-full border-2 flex-shrink-0">
+                        {step.number < currentStep ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <span className="text-sm font-semibold">{step.number}</span>
+                        )}
+                      </div>
+                      <span className="text-sm font-medium">{step.title}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 

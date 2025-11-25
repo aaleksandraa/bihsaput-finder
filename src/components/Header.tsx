@@ -96,7 +96,7 @@ const Header = ({ user }: HeaderProps) => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-2">
             <Link to="/search">
-              <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10' : 'hover:bg-accent'}`}>
+              <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10 hover:text-white' : 'hover:bg-accent'}`}>
                 <Search className="h-4 w-4" />
                 Pretraga
               </Button>
@@ -106,16 +106,16 @@ const Header = ({ user }: HeaderProps) => {
               <>
                 {isAdmin && (
                   <Link to="/admin">
-                    <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10' : 'hover:bg-accent'}`}>
+                    <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10 hover:text-white' : 'hover:bg-accent'}`}>
                       <Shield className="h-4 w-4" />
                       Admin
                     </Button>
                   </Link>
                 )}
-                
+                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10' : 'hover:bg-accent'}`}>
+                    <Button variant="ghost" size="sm" className={`gap-2 ${isHomePage ? 'text-white hover:bg-white/10 hover:text-white' : 'hover:bg-accent'}`}>
                       <User className="h-4 w-4" />
                       Profil
                     </Button>
@@ -138,7 +138,7 @@ const Header = ({ user }: HeaderProps) => {
             ) : (
               <>
                 <Link to="/auth">
-                  <Button variant="ghost" size="sm" className={isHomePage ? 'text-white hover:bg-white/10' : ''}>
+                  <Button variant="ghost" size="sm" className={isHomePage ? 'text-white hover:bg-white/10 hover:text-white' : ''}>
                     Prijava
                   </Button>
                 </Link>
@@ -169,14 +169,14 @@ const Header = ({ user }: HeaderProps) => {
               
               <div className="flex flex-col gap-3">
                 <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10" size="lg">
+                  <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-white" size="lg">
                     <Home className="h-5 w-5" />
                     Početna
                   </Button>
                 </Link>
                 
                 <Link to="/search" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10" size="lg">
+                  <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-white" size="lg">
                     <Search className="h-5 w-5" />
                     Pretraga
                   </Button>
@@ -184,21 +184,21 @@ const Header = ({ user }: HeaderProps) => {
 
                 {user ? (
                   <>
-                    {isAdmin && (
-                      <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10" size="lg">
-                          <Shield className="h-5 w-5" />
-                          Admin Panel
-                        </Button>
-                      </Link>
-                    )}
-                    
-                    <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10" size="lg">
-                        <User className="h-5 w-5" />
-                        Moj profil
-                      </Button>
-                    </Link>
+                {isAdmin && (
+                  <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-white" size="lg">
+                      <Shield className="h-5 w-5" />
+                      Admin Panel
+                    </Button>
+                  </Link>
+                )}
+                
+                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start gap-2 text-white hover:bg-white/10 hover:text-white" size="lg">
+                    <User className="h-5 w-5" />
+                    Moj profil
+                  </Button>
+                </Link>
                     
                     <div className="my-2 border-t border-white/20" />
                     
@@ -219,7 +219,7 @@ const Header = ({ user }: HeaderProps) => {
                   <>
                     <div className="my-2 border-t border-white/20" />
                     <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10" size="lg">
+                      <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 hover:text-white" size="lg">
                         Prijava
                       </Button>
                     </Link>

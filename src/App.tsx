@@ -19,6 +19,7 @@ import ServiceCategory from "./pages/ServiceCategory";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import CityPage from "./pages/CityPage";
+import ServiceCityPage from "./pages/ServiceCityPage";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +77,7 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/lokacije/:citySlug" element={<CityPage />} />
+            <Route path="/usluge/:serviceSlug/:citySlug" element={<ServiceCityPage />} />
             <Route path="/sitemap.xml" element={<SitemapRedirect />} />
             <Route path="/rss.xml" element={<RSSRedirect />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

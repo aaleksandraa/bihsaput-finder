@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { MapPin, Navigation } from 'lucide-react';
@@ -15,30 +18,64 @@ interface Profile {
   slug: string;
   latitude: number;
   longitude: number;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  services?: Array<{ name: string }>;
+  working_hours?: Array<{
+    day_of_week: number;
+    start_time: string | null;
+    end_time: string | null;
+    is_closed: boolean | null;
+  }>;
 }
 
 const HomepageNearbyMap = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
+  const markerClusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [locationError, setLocationError] = useState(false);
 
-  // Fetch profiles with location data
+  // Fetch profiles with detailed data
   useEffect(() => {
     const fetchProfiles = async () => {
-      const { data } = await supabase
+      const { data: profilesData } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, company_name, business_type, slug, latitude, longitude')
+        .select('id, first_name, last_name, company_name, business_type, slug, latitude, longitude, email, phone, website')
         .eq('is_active', true)
         .eq('registration_completed', true)
         .not('latitude', 'is', null)
         .not('longitude', 'is', null);
       
-      if (data) {
-        setProfiles(data);
+      if (profilesData) {
+        // Fetch services and working hours for each profile
+        const profilesWithDetails = await Promise.all(
+          profilesData.map(async (profile) => {
+            const [servicesRes, hoursRes] = await Promise.all([
+              supabase
+                .from('profile_services')
+                .select('service_categories(name)')
+                .eq('profile_id', profile.id)
+                .limit(3),
+              supabase
+                .from('working_hours')
+                .select('day_of_week, start_time, end_time, is_closed')
+                .eq('profile_id', profile.id)
+                .order('day_of_week', { ascending: true })
+            ]);
+
+            return {
+              ...profile,
+              services: servicesRes.data?.map(s => ({ name: s.service_categories?.name || '' })) || [],
+              working_hours: hoursRes.data || []
+            };
+          })
+        );
+        
+        setProfiles(profilesWithDetails);
       }
     };
 
@@ -110,15 +147,40 @@ const HomepageNearbyMap = () => {
       L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
         .addTo(mapInstanceRef.current)
         .bindPopup('<strong>Vaša lokacija</strong>');
+
+      // Initialize marker cluster group
+      markerClusterGroupRef.current = (L as any).markerClusterGroup({
+        chunkedLoading: true,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        maxClusterRadius: 80,
+      });
+      mapInstanceRef.current.addLayer(markerClusterGroupRef.current);
     }
 
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
+    // Clear existing markers from cluster group
+    if (markerClusterGroupRef.current) {
+      markerClusterGroupRef.current.clearLayers();
+    }
+
+    // Helper function to format working hours
+    const formatWorkingHours = (hours: Profile['working_hours']) => {
+      if (!hours || hours.length === 0) return 'Nisu dostupni podaci';
+      
+      const days = ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'];
+      const todayHours = hours.find(h => h.day_of_week === new Date().getDay());
+      
+      if (!todayHours) return 'Nisu dostupni podaci';
+      if (todayHours.is_closed) return 'Zatvoreno danas';
+      if (!todayHours.start_time || !todayHours.end_time) return 'Nisu dostupni podaci';
+      
+      return `Danas: ${todayHours.start_time.slice(0, 5)} - ${todayHours.end_time.slice(0, 5)}`;
+    };
 
     // Add markers for each profile
     profiles.forEach((profile) => {
-      if (!mapInstanceRef.current) return;
+      if (!mapInstanceRef.current || !markerClusterGroupRef.current) return;
 
       const customIcon = L.divIcon({
         className: 'custom-marker',
@@ -163,32 +225,58 @@ const HomepageNearbyMap = () => {
         ? profile.company_name 
         : `${profile.first_name} ${profile.last_name}`;
 
+      const servicesText = profile.services && profile.services.length > 0
+        ? profile.services.map(s => s.name).filter(Boolean).join(', ')
+        : 'Nisu navedene usluge';
+
       const popupContent = `
-        <div style="padding: 8px; font-family: system-ui;">
-          <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">
+        <div style="padding: 12px; font-family: system-ui; min-width: 250px; max-width: 300px;">
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 12px; color: hsl(222.2 47.4% 11.2%);">
             ${displayName}
           </div>
+          
+          <div style="margin-bottom: 10px; border-top: 1px solid #e5e7eb; padding-top: 10px;">
+            <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px;">KONTAKT</div>
+            ${profile.phone ? `<div style="font-size: 13px; margin-bottom: 4px;">📞 ${profile.phone}</div>` : ''}
+            ${profile.email ? `<div style="font-size: 13px; margin-bottom: 4px;">✉️ ${profile.email}</div>` : ''}
+            ${profile.website ? `<div style="font-size: 13px;"><a href="${profile.website}" target="_blank" style="color: #3b82f6; text-decoration: none;">🌐 Web stranica</a></div>` : ''}
+          </div>
+          
+          <div style="margin-bottom: 10px; border-top: 1px solid #e5e7eb; padding-top: 10px;">
+            <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px;">RADNO VREME</div>
+            <div style="font-size: 13px;">${formatWorkingHours(profile.working_hours)}</div>
+          </div>
+          
+          <div style="margin-bottom: 12px; border-top: 1px solid #e5e7eb; padding-top: 10px;">
+            <div style="font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 6px;">USLUGE</div>
+            <div style="font-size: 13px; line-height: 1.4;">${servicesText}</div>
+          </div>
+          
           <a href="/profil/${profile.slug}" style="
-            display: inline-block;
-            padding: 4px 12px;
+            display: block;
+            text-align: center;
+            padding: 8px 16px;
             background: hsl(222.2 47.4% 11.2%);
             color: white;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: 13px;
             text-decoration: none;
             font-weight: 500;
-          ">Pogledaj profil</a>
+            margin-top: 12px;
+          ">Pogledaj kompletan profil</a>
         </div>
       `;
 
       const marker = L.marker([profile.latitude, profile.longitude], { icon: customIcon })
-        .addTo(mapInstanceRef.current)
-        .bindPopup(popupContent);
+        .bindPopup(popupContent, { maxWidth: 320 });
 
-      markersRef.current.push(marker);
+      markerClusterGroupRef.current.addLayer(marker);
     });
 
     return () => {
+      if (markerClusterGroupRef.current) {
+        markerClusterGroupRef.current.clearLayers();
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;

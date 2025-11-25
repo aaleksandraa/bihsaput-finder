@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Briefcase, ChevronDown, Navigation, UserCheck } from "lucide-react";
+import { Search, MapPin, Briefcase, ChevronDown, Navigation, UserCheck, Check, ChevronsUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -15,6 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 interface SearchFiltersProps {
   onSearch?: (filters: any) => void;
@@ -34,6 +37,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [onlyAvailable, setOnlyAvailable] = useState(searchParams.get('available') === 'true');
   const [showAvailabilityFilter, setShowAvailabilityFilter] = useState(false);
+  const [citySearchOpen, setCitySearchOpen] = useState(false);
 
   useEffect(() => {
     fetchServiceCategories();
@@ -270,20 +274,69 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
 
         {/* City Filter - Shows when entity is selected */}
         {entity && entity !== 'all' && cities.length > 0 && (
-          <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger className="flex-1">
-              <MapPin className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Grad" />
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px]">
-              <SelectItem value="all">Svi gradovi</SelectItem>
-              {cities.map((city) => (
-                <SelectItem key={city.id} value={city.id}>
-                  {city.name} ({city.postal_code})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={citySearchOpen}
+                className="flex-1 justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>
+                    {selectedCity && selectedCity !== "all"
+                      ? cities.find((city) => city.id === selectedCity)?.name
+                      : "Grad"}
+                  </span>
+                </div>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Pretraži grad ili poštanski broj..." />
+                <CommandList>
+                  <CommandEmpty>Grad nije pronađen.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      value="all"
+                      onSelect={() => {
+                        setSelectedCity("all");
+                        setCitySearchOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          selectedCity === "all" ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      Svi gradovi
+                    </CommandItem>
+                    {cities.map((city) => (
+                      <CommandItem
+                        key={city.id}
+                        value={`${city.name} ${city.postal_code}`}
+                        onSelect={() => {
+                          setSelectedCity(city.id);
+                          setCitySearchOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedCity === city.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {city.name} ({city.postal_code})
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         )}
       </div>
 

@@ -38,12 +38,19 @@ const EditWorkingHours = ({ profile, onUpdate }: EditWorkingHoursProps) => {
       .order('day_of_week');
 
     if (data && data.length > 0) {
-      setHours(data);
+      // Sort to display Monday first
+      const sortedData = [...data].sort((a, b) => {
+        const dayA = a.day_of_week === 0 ? 6 : a.day_of_week - 1;
+        const dayB = b.day_of_week === 0 ? 6 : b.day_of_week - 1;
+        return dayA - dayB;
+      });
+      setHours(sortedData);
     } else {
-      // Initialize with default values
+      // Initialize with default values (1 = Monday, 2 = Tuesday, ..., 0 = Sunday)
+      const dayValues = [1, 2, 3, 4, 5, 6, 0];
       setHours(
         DAYS.map((_, index) => ({
-          day_of_week: index + 1,
+          day_of_week: dayValues[index],
           start_time: '09:00',
           end_time: '17:00',
           is_closed: index >= 5, // Weekend closed by default
@@ -122,6 +129,7 @@ const EditWorkingHours = ({ profile, onUpdate }: EditWorkingHoursProps) => {
                   onChange={(e) =>
                     handleChange(index, 'start_time', e.target.value)
                   }
+                  step="3600"
                   required
                 />
               </div>
@@ -134,6 +142,7 @@ const EditWorkingHours = ({ profile, onUpdate }: EditWorkingHoursProps) => {
                   onChange={(e) =>
                     handleChange(index, 'end_time', e.target.value)
                   }
+                  step="3600"
                   required
                 />
               </div>

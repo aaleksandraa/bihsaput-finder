@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -11,6 +12,7 @@ export const GASettings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [gaId, setGaId] = useState('');
+  const [showAvailabilityFilter, setShowAvailabilityFilter] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -20,12 +22,13 @@ export const GASettings = () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('google_analytics_id')
+        .select('google_analytics_id, show_availability_filter')
         .single();
 
       if (error) throw error;
 
       setGaId(data?.google_analytics_id || '');
+      setShowAvailabilityFilter(data?.show_availability_filter || false);
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast.error('Greška pri učitavanju postavki');
@@ -39,7 +42,10 @@ export const GASettings = () => {
     try {
       const { error } = await supabase
         .from('site_settings')
-        .update({ google_analytics_id: gaId || null })
+        .update({ 
+          google_analytics_id: gaId || null,
+          show_availability_filter: showAvailabilityFilter
+        })
         .eq('id', (await supabase.from('site_settings').select('id').single()).data?.id);
 
       if (error) throw error;
@@ -62,48 +68,76 @@ export const GASettings = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Google Analytics</CardTitle>
-        <CardDescription>
-          Podesite Google Analytics tracking ID za praćenje posjeta sajtu
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="ga-id">Google Analytics ID</Label>
-          <Input
-            id="ga-id"
-            placeholder="G-XXXXXXXXXX ili UA-XXXXXXXXX-X"
-            value={gaId}
-            onChange={(e) => setGaId(e.target.value)}
-          />
-          <p className="text-sm text-muted-foreground">
-            Unesite vaš Google Analytics Measurement ID (npr. G-XXXXXXXXXX)
-          </p>
-        </div>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Google Analytics</CardTitle>
+          <CardDescription>
+            Podesite Google Analytics tracking ID za praćenje posjeta sajtu
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="ga-id">Google Analytics ID</Label>
+            <Input
+              id="ga-id"
+              placeholder="G-XXXXXXXXXX ili UA-XXXXXXXXX-X"
+              value={gaId}
+              onChange={(e) => setGaId(e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              Unesite vaš Google Analytics Measurement ID (npr. G-XXXXXXXXXX)
+            </p>
+          </div>
 
-        <Button onClick={handleSave} disabled={saving}>
-          {saving ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Čuvam...
-            </>
-          ) : (
-            'Sačuvaj'
-          )}
-        </Button>
+          <div className="text-sm text-muted-foreground space-y-2 pt-4 border-t">
+            <p><strong>Kako dobiti Google Analytics ID:</strong></p>
+            <ol className="list-decimal list-inside space-y-1">
+              <li>Idite na <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">Google Analytics</a></li>
+              <li>Kreirajte nalog ili se prijavite</li>
+              <li>Dodajte novu Property</li>
+              <li>Kopirajte Measurement ID (G-XXXXXXXXXX)</li>
+            </ol>
+          </div>
+        </CardContent>
+      </Card>
 
-        <div className="text-sm text-muted-foreground space-y-2 pt-4 border-t">
-          <p><strong>Kako dobiti Google Analytics ID:</strong></p>
-          <ol className="list-decimal list-inside space-y-1">
-            <li>Idite na <a href="https://analytics.google.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">Google Analytics</a></li>
-            <li>Kreirajte nalog ili se prijavite</li>
-            <li>Dodajte novu Property</li>
-            <li>Kopirajte Measurement ID (G-XXXXXXXXXX)</li>
-          </ol>
-        </div>
-      </CardContent>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Filteri pretrage</CardTitle>
+          <CardDescription>
+            Kontrolišite koje filtere korisnici vide na stranici pretrage
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="show-availability"
+              checked={showAvailabilityFilter}
+              onCheckedChange={(checked) => setShowAvailabilityFilter(checked as boolean)}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="show-availability" className="cursor-pointer font-medium">
+                Prikaži filter "Samo dostupni za nove klijente"
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Omogućava korisnicima da filtriraju rezultate pretrage i vide samo knjigovođe koji trenutno primaju nove klijente
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Button onClick={handleSave} disabled={saving}>
+        {saving ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Čuvam...
+          </>
+        ) : (
+          'Sačuvaj sve postavke'
+        )}
+      </Button>
+    </div>
   );
 };

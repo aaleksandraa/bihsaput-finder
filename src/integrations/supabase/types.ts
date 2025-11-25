@@ -405,6 +405,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accepting_new_clients: boolean | null
           business_city_id: string | null
           business_street: string | null
           business_type: Database["public"]["Enums"]["business_type"] | null
@@ -439,6 +440,7 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          accepting_new_clients?: boolean | null
           business_city_id?: string | null
           business_street?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
@@ -473,6 +475,7 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          accepting_new_clients?: boolean | null
           business_city_id?: string | null
           business_street?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null

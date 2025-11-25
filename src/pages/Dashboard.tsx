@@ -11,10 +11,11 @@ import EditWorkingHours from "@/components/profile-edit/EditWorkingHours";
 import EditDescriptions from "@/components/profile-edit/EditDescriptions";
 import EditLocation from "@/components/profile-edit/EditLocation";
 import EditSocialMedia from "@/components/profile-edit/EditSocialMedia";
+import EditAvailability from "@/components/profile-edit/EditAvailability";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, User, Briefcase, Clock, MapPin, Globe, FileText, Image as ImageIcon } from "lucide-react";
+import { Loader2, User, Briefcase, Clock, MapPin, Globe, FileText, Image as ImageIcon, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -156,7 +157,7 @@ const Dashboard = () => {
           )}
 
           <Tabs defaultValue="personal" className="w-full">
-            <TabsList className="w-full h-auto grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1 p-1">
+            <TabsList className="w-full h-auto grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-1 p-1">
               <TabsTrigger value="personal" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
                 <User className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Lični</span>
@@ -172,6 +173,10 @@ const Dashboard = () => {
               <TabsTrigger value="hours" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
                 <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Radno vrijeme</span>
+              </TabsTrigger>
+              <TabsTrigger value="availability" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
+                <UserCheck className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Dostupnost</span>
               </TabsTrigger>
               <TabsTrigger value="location" className="flex items-center justify-center gap-1 text-xs sm:text-sm py-2">
                 <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -231,6 +236,17 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <EditWorkingHours profile={profile} onUpdate={fetchProfile} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="availability">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Dostupnost za nove klijente</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <EditAvailability profile={profile} onUpdate={fetchProfile} />
                 </CardContent>
               </Card>
             </TabsContent>

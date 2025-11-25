@@ -31,6 +31,8 @@ import {
   Instagram,
   Building2,
   Calendar,
+  UserCheck,
+  UserX,
 } from "lucide-react";
 import { Loader2 } from "lucide-react";
 
@@ -179,6 +181,18 @@ const Profile = () => {
               <div className="flex items-center justify-between gap-3 mb-3">
                 {/* Badges */}
                 <div className="flex flex-wrap gap-1.5">
+                  {(profile as any).accepting_new_clients !== false && (
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                      <UserCheck className="h-3 w-3 mr-1" />
+                      Dostupan
+                    </Badge>
+                  )}
+                  {(profile as any).accepting_new_clients === false && (
+                    <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100">
+                      <UserX className="h-3 w-3 mr-1" />
+                      Nedostupan
+                    </Badge>
+                  )}
                   {profile.has_physical_office && (
                     <Badge variant="secondary" className="text-xs px-2 py-0.5">
                       <Building2 className="h-3 w-3 mr-1" />
@@ -286,6 +300,18 @@ const Profile = () => {
                 </div>
                 
                 <div className="flex flex-wrap gap-2">
+                  {(profile as any).accepting_new_clients !== false && (
+                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                      <UserCheck className="h-3 w-3 mr-1.5" />
+                      Dostupan za nove klijente
+                    </Badge>
+                  )}
+                  {(profile as any).accepting_new_clients === false && (
+                    <Badge variant="secondary" className="text-xs bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100">
+                      <UserX className="h-3 w-3 mr-1.5" />
+                      Nedostupan za nove klijente
+                    </Badge>
+                  )}
                   {profile.works_online && (
                     <Badge variant="secondary" className="text-xs">
                       <Globe className="h-3 w-3 mr-1.5" />

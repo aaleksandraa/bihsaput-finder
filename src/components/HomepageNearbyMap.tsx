@@ -7,7 +7,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { MapPin, Navigation } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { MapPin, Navigation, Search } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -38,6 +39,25 @@ const HomepageNearbyMap = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [locationError, setLocationError] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showMapSearch, setShowMapSearch] = useState(false);
+  const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
+
+  // Fetch site settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('show_map_search')
+        .single();
+      
+      if (data) {
+        setShowMapSearch(data.show_map_search || false);
+      }
+    };
+    
+    fetchSettings();
+  }, []);
 
   // Fetch profiles with detailed data
   useEffect(() => {
@@ -81,6 +101,31 @@ const HomepageNearbyMap = () => {
 
     fetchProfiles();
   }, []);
+
+  // Filter profiles based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredProfiles(profiles);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = profiles.filter((profile) => {
+      const firstName = profile.first_name.toLowerCase();
+      const lastName = profile.last_name.toLowerCase();
+      const fullName = `${firstName} ${lastName}`;
+      const companyName = profile.company_name?.toLowerCase() || '';
+      
+      return (
+        fullName.includes(query) ||
+        firstName.includes(query) ||
+        lastName.includes(query) ||
+        companyName.includes(query)
+      );
+    });
+
+    setFilteredProfiles(filtered);
+  }, [searchQuery, profiles]);
 
   // Get user location
   useEffect(() => {
@@ -179,7 +224,7 @@ const HomepageNearbyMap = () => {
     };
 
     // Add markers for each profile
-    profiles.forEach((profile) => {
+    filteredProfiles.forEach((profile) => {
       if (!mapInstanceRef.current || !markerClusterGroupRef.current) return;
 
       const customIcon = L.divIcon({
@@ -282,7 +327,7 @@ const HomepageNearbyMap = () => {
         mapInstanceRef.current = null;
       }
     };
-  }, [userLocation, profiles]);
+  }, [userLocation, filteredProfiles]);
 
   if (loading) {
     return (
@@ -343,6 +388,26 @@ const HomepageNearbyMap = () => {
         </div>
 
         <div className="max-w-6xl mx-auto">
+          {showMapSearch && (
+            <div className="mb-4 max-w-md mx-auto">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Pretražite po imenu profesionalca..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              {searchQuery && (
+                <p className="text-sm text-muted-foreground mt-2 text-center">
+                  Prikazano {filteredProfiles.length} od {profiles.length} profesionalaca
+                </p>
+              )}
+            </div>
+          )}
+          
           <div 
             ref={mapRef} 
             className="w-full h-[500px] rounded-2xl shadow-large z-0"

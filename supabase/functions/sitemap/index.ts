@@ -33,13 +33,23 @@ Deno.serve(async (req) => {
     // Fetch all cities
     const { data: cities } = await supabase
       .from('cities')
-      .select('id, name, entities(code)');
+      .select('id, name, postal_code, entities(code)');
 
     // Fetch all published blog posts
     const { data: blogPosts } = await supabase
       .from('blog_posts')
       .select('slug, updated_at')
       .eq('is_published', true);
+
+    // Fetch all profile services to determine service-city combinations
+    const { data: profileServices } = await supabase
+      .from('profile_services')
+      .select(`
+        service_id,
+        profiles!inner(business_city_id, is_active, registration_completed)
+      `);
+
+    console.log('Fetched profile services for service-city combinations');
 
     const baseUrl = 'https://knjigovodje.ba';
     const now = new Date().toISOString().split('T')[0];
@@ -100,19 +110,55 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Add city pages (if we want to create them in the future)
+    // Add city pages
     if (cities) {
       for (const city of cities) {
-        const entity = city.entities as any;
-        const entityCode = entity?.code || 'bih';
         sitemap += `
   <url>
-    <loc>${baseUrl}/lokacije/${entityCode}/${city.name.toLowerCase().replace(/\s+/g, '-')}</loc>
+    <loc>${baseUrl}/lokacije/${city.postal_code}</loc>
     <lastmod>${now}</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.7</priority>
   </url>`;
       }
+    }
+
+    // Add service + city combination pages
+    if (profileServices && cities && categories) {
+      // Build a map of service-city combinations
+      const serviceCityMap = new Map<string, Set<string>>();
+      
+      for (const ps of profileServices as any[]) {
+        const serviceId = ps.service_id;
+        const cityId = ps.profiles?.business_city_id;
+        const isActive = ps.profiles?.is_active;
+        const isCompleted = ps.profiles?.registration_completed;
+        
+        if (serviceId && cityId && isActive && isCompleted) {
+          if (!serviceCityMap.has(serviceId)) {
+            serviceCityMap.set(serviceId, new Set());
+          }
+          serviceCityMap.get(serviceId)!.add(cityId);
+        }
+      }
+
+      // Generate URLs for each service-city combination
+      for (const [serviceId, cityIds] of serviceCityMap.entries()) {
+        for (const cityId of cityIds) {
+          const city = cities.find((c: any) => c.id === cityId);
+          if (city) {
+            sitemap += `
+  <url>
+    <loc>${baseUrl}/usluge/${serviceId}/${city.postal_code}</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+          }
+        }
+      }
+      
+      console.log(`Generated ${serviceCityMap.size} service categories with city combinations`);
     }
 
     // Add blog posts
@@ -131,7 +177,7 @@ Deno.serve(async (req) => {
 
     sitemap += '\n</urlset>';
 
-    console.log(`Sitemap generated with ${profiles?.length || 0} profiles, ${categories?.length || 0} categories, ${cities?.length || 0} cities, ${blogPosts?.length || 0} blog posts`);
+    console.log(`Sitemap generated with ${profiles?.length || 0} profiles, ${categories?.length || 0} categories, ${cities?.length || 0} cities, ${blogPosts?.length || 0} blog posts, and service-city combinations`);
 
     return new Response(sitemap, {
       headers: {

@@ -68,7 +68,8 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
     const { data } = await supabase
       .from('service_categories')
       .select('*')
-      .order('name');
+      .order('display_order', { ascending: true })
+      .order('name', { ascending: true });
     
     if (data) {
       const mainCategories = data.filter(cat => !cat.parent_id);

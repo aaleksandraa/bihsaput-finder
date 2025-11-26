@@ -9,10 +9,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit, Users, MapPin, Briefcase, Loader2, Settings, Upload, FileText } from "lucide-react";
+import { Plus, Trash2, Edit, Users, MapPin, Briefcase, Loader2, Settings, Upload, FileText, GripVertical } from "lucide-react";
 import { CSVImport } from "@/components/admin/CSVImport";
 import { GASettings } from "@/components/admin/GASettings";
 import { BlogManagement } from "@/components/admin/BlogManagement";
+import { SortableServiceItem } from "@/components/admin/SortableServiceItem";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -32,6 +50,13 @@ const Admin = () => {
   const [newCanton, setNewCanton] = useState({ name: '', entity_id: '' });
   const [newService, setNewService] = useState({ name: '', description: '', parent_id: '' });
   const [editingService, setEditingService] = useState<any>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     checkAdmin();
@@ -98,7 +123,8 @@ const Admin = () => {
     const { data: categoriesData } = await supabase
       .from('service_categories')
       .select('*')
-      .order('name');
+      .order('display_order', { ascending: true })
+      .order('name', { ascending: true });
     if (categoriesData) setServiceCategories(categoriesData);
   };
 
@@ -217,12 +243,22 @@ const Admin = () => {
       return;
     }
 
+    // Calculate the next display_order value
+    const siblingCategories = newService.parent_id
+      ? serviceCategories.filter(s => s.parent_id === newService.parent_id)
+      : serviceCategories.filter(s => !s.parent_id);
+    
+    const maxDisplayOrder = siblingCategories.reduce((max, cat) => 
+      Math.max(max, cat.display_order || 0), 0
+    );
+
     const { error } = await supabase
       .from('service_categories')
       .insert([{
         name: newService.name,
         description: newService.description,
-        parent_id: newService.parent_id || null
+        parent_id: newService.parent_id || null,
+        display_order: maxDisplayOrder + 1
       }]);
 
     if (error) {
@@ -270,6 +306,52 @@ const Admin = () => {
     } else {
       toast.success("Kategorija uspješno obrisana");
       fetchData();
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent, parentId: string | null = null) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const categories = parentId 
+      ? serviceCategories.filter(s => s.parent_id === parentId)
+      : serviceCategories.filter(s => !s.parent_id);
+
+    const oldIndex = categories.findIndex(cat => cat.id === active.id);
+    const newIndex = categories.findIndex(cat => cat.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedCategories = arrayMove(categories, oldIndex, newIndex);
+
+    // Update display_order for all affected categories
+    const updates = reorderedCategories.map((cat, index) => ({
+      id: cat.id,
+      display_order: index + 1
+    }));
+
+    // Optimistically update UI
+    const newServiceCategories = serviceCategories.map(cat => {
+      const update = updates.find(u => u.id === cat.id);
+      return update ? { ...cat, display_order: update.display_order } : cat;
+    });
+    setServiceCategories(newServiceCategories);
+
+    // Save to database
+    try {
+      for (const update of updates) {
+        await supabase
+          .from('service_categories')
+          .update({ display_order: update.display_order })
+          .eq('id', update.id);
+      }
+      toast.success("Redoslijed uspješno sačuvan");
+    } catch (error) {
+      toast.error("Greška pri čuvanju redoslijeda");
+      fetchData(); // Revert on error
     }
   };
 
@@ -556,86 +638,115 @@ const Admin = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Kategorije usluga ({serviceCategories.length})</CardTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Povucite ikonu sa lijeve strane da promijenite redoslijed
+                </p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {serviceCategories.filter(s => !s.parent_id).map((category) => (
-                    <div key={category.id} className="border rounded">
-                      <div className="p-3">
-                        {editingService?.id === category.id ? (
-                          <div className="space-y-2">
-                            <Input
-                              value={editingService.name}
-                              onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
-                            />
-                            <Textarea
-                              value={editingService.description || ''}
-                              onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
-                            />
-                            <div className="flex gap-2">
-                              <Button size="sm" onClick={handleUpdateService}>Sačuvaj</Button>
-                              <Button size="sm" variant="ghost" onClick={() => setEditingService(null)}>Otkaži</Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <p className="font-medium">{category.name}</p>
-                              {category.description && (
-                                <p className="text-sm text-muted-foreground">{category.description}</p>
-                              )}
-                              {/* Subcategories */}
-                              {serviceCategories.filter(s => s.parent_id === category.id).length > 0 && (
-                                <div className="mt-2 ml-4 space-y-1">
-                                  {serviceCategories.filter(s => s.parent_id === category.id).map((sub) => (
-                                    <div key={sub.id} className="p-2 bg-muted/50 rounded text-sm">
-                                      {editingService?.id === sub.id ? (
-                                        <div className="space-y-2">
-                                          <Input
-                                            value={editingService.name}
-                                            onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
-                                          />
-                                          <Textarea
-                                            value={editingService.description || ''}
-                                            onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
-                                          />
-                                          <div className="flex gap-2">
-                                            <Button size="sm" onClick={handleUpdateService}>Sačuvaj</Button>
-                                            <Button size="sm" variant="ghost" onClick={() => setEditingService(null)}>Otkaži</Button>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event) => handleDragEnd(event, null)}
+                >
+                  <SortableContext
+                    items={serviceCategories.filter(s => !s.parent_id).map(s => s.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2 max-h-96 overflow-y-auto pl-6">
+                      {serviceCategories.filter(s => !s.parent_id).map((category) => (
+                        <SortableServiceItem key={category.id} id={category.id}>
+                          <div className="border rounded">
+                            <div className="p-3">
+                              {editingService?.id === category.id ? (
+                                <div className="space-y-2">
+                                  <Input
+                                    value={editingService.name}
+                                    onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+                                  />
+                                  <Textarea
+                                    value={editingService.description || ''}
+                                    onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                                  />
+                                  <div className="flex gap-2">
+                                    <Button size="sm" onClick={handleUpdateService}>Sačuvaj</Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setEditingService(null)}>Otkaži</Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <p className="font-medium">{category.name}</p>
+                                    {category.description && (
+                                      <p className="text-sm text-muted-foreground">{category.description}</p>
+                                    )}
+                                    {/* Subcategories */}
+                                    {serviceCategories.filter(s => s.parent_id === category.id).length > 0 && (
+                                      <DndContext
+                                        sensors={sensors}
+                                        collisionDetection={closestCenter}
+                                        onDragEnd={(event) => handleDragEnd(event, category.id)}
+                                      >
+                                        <SortableContext
+                                          items={serviceCategories.filter(s => s.parent_id === category.id).map(s => s.id)}
+                                          strategy={verticalListSortingStrategy}
+                                        >
+                                          <div className="mt-2 ml-4 space-y-1 pl-6">
+                                            {serviceCategories.filter(s => s.parent_id === category.id).map((sub) => (
+                                              <SortableServiceItem key={sub.id} id={sub.id}>
+                                                <div className="p-2 bg-muted/50 rounded text-sm">
+                                                  {editingService?.id === sub.id ? (
+                                                    <div className="space-y-2">
+                                                      <Input
+                                                        value={editingService.name}
+                                                        onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+                                                      />
+                                                      <Textarea
+                                                        value={editingService.description || ''}
+                                                        onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                                                      />
+                                                      <div className="flex gap-2">
+                                                        <Button size="sm" onClick={handleUpdateService}>Sačuvaj</Button>
+                                                        <Button size="sm" variant="ghost" onClick={() => setEditingService(null)}>Otkaži</Button>
+                                                      </div>
+                                                    </div>
+                                                  ) : (
+                                                    <div className="flex items-center justify-between">
+                                                      <span>{sub.name}</span>
+                                                      <div className="flex gap-1">
+                                                        <Button size="sm" variant="ghost" onClick={() => setEditingService(sub)}>
+                                                          <Edit className="h-3 w-3" />
+                                                        </Button>
+                                                        <Button size="sm" variant="ghost" onClick={() => handleDeleteService(sub.id)}>
+                                                          <Trash2 className="h-3 w-3" />
+                                                        </Button>
+                                                      </div>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </SortableServiceItem>
+                                            ))}
                                           </div>
-                                        </div>
-                                      ) : (
-                                        <div className="flex items-center justify-between">
-                                          <span>{sub.name}</span>
-                                          <div className="flex gap-1">
-                                            <Button size="sm" variant="ghost" onClick={() => setEditingService(sub)}>
-                                              <Edit className="h-3 w-3" />
-                                            </Button>
-                                            <Button size="sm" variant="ghost" onClick={() => handleDeleteService(sub.id)}>
-                                              <Trash2 className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
+                                        </SortableContext>
+                                      </DndContext>
+                                    )}
+                                  </div>
+                                  <div className="flex gap-1">
+                                    <Button size="sm" variant="ghost" onClick={() => setEditingService(category)}>
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => handleDeleteService(category.id)}>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 </div>
                               )}
                             </div>
-                            <div className="flex gap-1">
-                              <Button size="sm" variant="ghost" onClick={() => setEditingService(category)}>
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => handleDeleteService(category.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
                           </div>
-                        )}
-                      </div>
+                        </SortableServiceItem>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </SortableContext>
+                </DndContext>
               </CardContent>
             </Card>
           </TabsContent>

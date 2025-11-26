@@ -44,7 +44,8 @@ const ServiceCategory = () => {
         .from('service_categories')
         .select('*')
         .eq('parent_id', categoryId)
-        .order('name');
+        .order('display_order', { ascending: true })
+        .order('name', { ascending: true });
 
       if (subsData) {
         setSubcategories(subsData);

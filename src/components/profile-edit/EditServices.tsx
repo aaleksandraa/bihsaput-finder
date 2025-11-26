@@ -25,7 +25,8 @@ const EditServices = ({ profile, onUpdate }: EditServicesProps) => {
     const { data } = await supabase
       .from('service_categories')
       .select('*')
-      .order('name');
+      .order('display_order', { ascending: true })
+      .order('name', { ascending: true });
     
     if (data) setCategories(data);
   };

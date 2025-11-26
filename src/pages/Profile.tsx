@@ -182,7 +182,7 @@ const Profile = () => {
                         }`}
                       >
                         <Award className="h-3 w-3 mr-1" />
-                        {(profile as any).license_type === 'certified_accountant' ? 'CR' : 'CRT'}
+                        {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
                         {(profile as any).is_license_verified && ' ✓'}
                       </Badge>
                     </div>
@@ -281,13 +281,13 @@ const Profile = () => {
                     <div className="mb-2">
                       <Badge 
                         variant="secondary" 
-                        className={`text-xs px-2.5 py-1 ${
+                        className={`text-sm px-3 py-1 ${
                           (profile as any).is_license_verified 
                             ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 border border-blue-300 dark:border-blue-700'
                             : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                         }`}
                       >
-                        <Award className="h-3 w-3 mr-1.5" />
+                        <Award className="h-4 w-4 mr-1.5" />
                         {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
                         {(profile as any).is_license_verified && ' • Verifikovano'}
                       </Badge>

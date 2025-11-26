@@ -52,7 +52,8 @@ const Index = () => {
         .from('service_categories')
         .select('*')
         .is('parent_id', null)
-        .order('name')
+        .order('display_order', { ascending: true })
+        .order('name', { ascending: true })
         .limit(6);
       
       return data || [];

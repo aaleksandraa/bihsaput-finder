@@ -20,7 +20,9 @@ const Step3Services = ({ data, onChange }: Step3Props) => {
     const { data: categoriesData } = await supabase
       .from('service_categories')
       .select('*')
-      .is('parent_id', null);
+      .is('parent_id', null)
+      .order('display_order', { ascending: true })
+      .order('name', { ascending: true });
     
     if (categoriesData) {
       setCategories(categoriesData);
@@ -29,7 +31,9 @@ const Step3Services = ({ data, onChange }: Step3Props) => {
         const { data: subsData } = await supabase
           .from('service_categories')
           .select('*')
-          .eq('parent_id', category.id);
+          .eq('parent_id', category.id)
+          .order('display_order', { ascending: true })
+          .order('name', { ascending: true });
         
         if (subsData) {
           setSubcategories(prev => ({ ...prev, [category.id]: subsData }));

@@ -673,6 +673,7 @@ export type Database = {
     Views: {
       public_profiles: {
         Row: {
+          accepting_new_clients: boolean | null
           business_city_id: string | null
           business_type: Database["public"]["Enums"]["business_type"] | null
           company_name: string | null
@@ -683,8 +684,10 @@ export type Database = {
           id: string | null
           instagram_url: string | null
           is_active: boolean | null
+          is_license_verified: boolean | null
           last_name: string | null
           latitude: number | null
+          license_type: Database["public"]["Enums"]["license_type"] | null
           linkedin_url: string | null
           long_description: string | null
           longitude: number | null
@@ -700,6 +703,7 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          accepting_new_clients?: boolean | null
           business_city_id?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
           company_name?: string | null
@@ -710,8 +714,10 @@ export type Database = {
           id?: string | null
           instagram_url?: string | null
           is_active?: boolean | null
+          is_license_verified?: boolean | null
           last_name?: string | null
           latitude?: number | null
+          license_type?: Database["public"]["Enums"]["license_type"] | null
           linkedin_url?: string | null
           long_description?: string | null
           longitude?: number | null
@@ -727,6 +733,7 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          accepting_new_clients?: boolean | null
           business_city_id?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
           company_name?: string | null
@@ -737,8 +744,10 @@ export type Database = {
           id?: string | null
           instagram_url?: string | null
           is_active?: boolean | null
+          is_license_verified?: boolean | null
           last_name?: string | null
           latitude?: number | null
+          license_type?: Database["public"]["Enums"]["license_type"] | null
           linkedin_url?: string | null
           long_description?: string | null
           longitude?: number | null

@@ -23,6 +23,8 @@ const EditBusinessData = ({ profile, onUpdate }: EditBusinessDataProps) => {
     tax_id: profile.tax_id || '',
     business_street: profile.business_street || '',
     business_city_id: profile.business_city_id || '',
+    license_type: profile.license_type || '',
+    license_number: profile.license_number || '',
   });
 
   useEffect(() => {
@@ -51,6 +53,8 @@ const EditBusinessData = ({ profile, onUpdate }: EditBusinessDataProps) => {
         tax_id: formData.tax_id.trim(),
         business_street: formData.business_street.trim(),
         business_city_id: formData.business_city_id || null,
+        license_type: formData.license_type || null,
+        license_number: formData.license_number.trim() || null,
       })
       .eq('id', profile.id);
 
@@ -66,6 +70,40 @@ const EditBusinessData = ({ profile, onUpdate }: EditBusinessDataProps) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label>Licenca</Label>
+        <RadioGroup
+          value={formData.license_type}
+          onValueChange={(value) => setFormData({ ...formData, license_type: value })}
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="certified_accountant" id="cert-accountant" />
+            <Label htmlFor="cert-accountant" className="font-normal cursor-pointer">
+              Certifikovani računovođa
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="certified_accounting_technician" id="cert-tech" />
+            <Label htmlFor="cert-tech" className="font-normal cursor-pointer">
+              Certifikovani računovodstveni tehničar
+            </Label>
+          </div>
+        </RadioGroup>
+      </div>
+
+      {formData.license_type && (
+        <div className="space-y-2">
+          <Label htmlFor="license_number">Broj licence</Label>
+          <Input
+            id="license_number"
+            value={formData.license_number}
+            onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+            placeholder="Unesite broj licence"
+            maxLength={100}
+          />
+        </div>
+      )}
+
       <div className="space-y-2">
         <Label>Tip poslovanja *</Label>
         <RadioGroup

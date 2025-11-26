@@ -15,6 +15,7 @@ export const GASettings = () => {
   const [showAvailabilityFilter, setShowAvailabilityFilter] = useState(false);
   const [showMapSearch, setShowMapSearch] = useState(false);
   const [requireAdminApproval, setRequireAdminApproval] = useState(false);
+  const [showVerifiedFilter, setShowVerifiedFilter] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -24,7 +25,7 @@ export const GASettings = () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('google_analytics_id, show_availability_filter, show_map_search, require_admin_approval')
+        .select('google_analytics_id, show_availability_filter, show_map_search, require_admin_approval, show_verified_filter')
         .single();
 
       if (error) throw error;
@@ -33,6 +34,7 @@ export const GASettings = () => {
       setShowAvailabilityFilter(data?.show_availability_filter || false);
       setShowMapSearch(data?.show_map_search || false);
       setRequireAdminApproval(data?.require_admin_approval || false);
+      setShowVerifiedFilter(data?.show_verified_filter || false);
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast.error('Greška pri učitavanju postavki');
@@ -50,7 +52,8 @@ export const GASettings = () => {
           google_analytics_id: gaId || null,
           show_availability_filter: showAvailabilityFilter,
           show_map_search: showMapSearch,
-          require_admin_approval: requireAdminApproval
+          require_admin_approval: requireAdminApproval,
+          show_verified_filter: showVerifiedFilter
         })
         .eq('id', (await supabase.from('site_settings').select('id').single()).data?.id);
 
@@ -180,6 +183,32 @@ export const GASettings = () => {
               </Label>
               <p className="text-sm text-muted-foreground">
                 Kada je uključeno, novi profili će biti neaktivni dok admin ne odobri svaki profil pojedinačno. Korisno kada želite kontrolu nad tim ko se prikazuje na platformi.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Filter verifikovanih profesionalaca</CardTitle>
+          <CardDescription>
+            Omogućite korisnicima da filtriraju samo verifikovane profesionalce
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="show-verified-filter"
+              checked={showVerifiedFilter}
+              onCheckedChange={(checked) => setShowVerifiedFilter(checked as boolean)}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="show-verified-filter" className="cursor-pointer font-medium">
+                Prikaži filter za verifikovane profesionalce
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Kada je uključeno, korisnici mogu filtrirati rezultate pretrage da vide samo profesionalce sa verifikovanim licencama.
               </p>
             </div>
           </div>

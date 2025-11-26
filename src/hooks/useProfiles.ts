@@ -25,7 +25,14 @@ export const useProfiles = (filters?: {
           business_city_id,
           email,
           phone,
-          website
+          website,
+          license_type,
+          is_license_verified,
+          accepting_new_clients,
+          business_type,
+          years_experience,
+          works_online,
+          has_physical_office
         `)
         .eq("is_active", true)
         .eq("registration_completed", true);
@@ -102,6 +109,9 @@ export const useProfile = (slug: string | undefined) => {
           registration_completed,
           created_at,
           updated_at,
+          license_type,
+          is_license_verified,
+          accepting_new_clients,
           business_city:cities!profiles_business_city_id_fkey(name, postal_code)
         `)
         .eq("slug", slug)

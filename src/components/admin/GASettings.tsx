@@ -14,6 +14,7 @@ export const GASettings = () => {
   const [gaId, setGaId] = useState('');
   const [showAvailabilityFilter, setShowAvailabilityFilter] = useState(false);
   const [showMapSearch, setShowMapSearch] = useState(false);
+  const [requireAdminApproval, setRequireAdminApproval] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -23,7 +24,7 @@ export const GASettings = () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('google_analytics_id, show_availability_filter, show_map_search')
+        .select('google_analytics_id, show_availability_filter, show_map_search, require_admin_approval')
         .single();
 
       if (error) throw error;
@@ -31,6 +32,7 @@ export const GASettings = () => {
       setGaId(data?.google_analytics_id || '');
       setShowAvailabilityFilter(data?.show_availability_filter || false);
       setShowMapSearch(data?.show_map_search || false);
+      setRequireAdminApproval(data?.require_admin_approval || false);
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast.error('Greška pri učitavanju postavki');
@@ -47,7 +49,8 @@ export const GASettings = () => {
         .update({ 
           google_analytics_id: gaId || null,
           show_availability_filter: showAvailabilityFilter,
-          show_map_search: showMapSearch
+          show_map_search: showMapSearch,
+          require_admin_approval: requireAdminApproval
         })
         .eq('id', (await supabase.from('site_settings').select('id').single()).data?.id);
 
@@ -151,6 +154,32 @@ export const GASettings = () => {
               </Label>
               <p className="text-sm text-muted-foreground">
                 Omogućava korisnicima da pretražuju profesionalce po imenu direktno na mapi u realnom vremenu
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Odobravanje profila</CardTitle>
+          <CardDescription>
+            Kontrolišite da li admin mora odobriti profile prije nego što postanu javno vidljivi
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-3">
+            <Checkbox
+              id="require-admin-approval"
+              checked={requireAdminApproval}
+              onCheckedChange={(checked) => setRequireAdminApproval(checked as boolean)}
+            />
+            <div className="space-y-1">
+              <Label htmlFor="require-admin-approval" className="cursor-pointer font-medium">
+                Admin odobrava profile
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Kada je uključeno, novi profili će biti neaktivni dok admin ne odobri svaki profil pojedinačno. Korisno kada želite kontrolu nad tim ko se prikazuje na platformi.
               </p>
             </div>
           </div>

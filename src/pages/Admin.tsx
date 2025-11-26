@@ -383,10 +383,13 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 max-w-4xl">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-8 max-w-5xl">
             <TabsTrigger value="users">
               <Users className="h-4 w-4 mr-2" />
               Korisnici
+            </TabsTrigger>
+            <TabsTrigger value="licenses">
+              Licence
             </TabsTrigger>
             <TabsTrigger value="locations">
               <MapPin className="h-4 w-4 mr-2" />
@@ -458,6 +461,70 @@ const Admin = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Licenses Tab */}
+          <TabsContent value="licenses" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Verifikacija licenci</CardTitle>
+                <CardDescription>
+                  Pregledajte i verifikujte licence profesionalaca
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {profiles
+                    .filter(profile => profile.license_type && profile.license_number)
+                    .map((profile) => (
+                      <div key={profile.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <h3 className="font-semibold">
+                            {profile.company_name || `${profile.first_name} ${profile.last_name}`}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">{profile.email}</p>
+                          <div className="flex flex-col gap-1 mt-2">
+                            <span className="text-sm">
+                              <strong>Tip licence:</strong> {profile.license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
+                            </span>
+                            <span className="text-sm">
+                              <strong>Broj licence:</strong> {profile.license_number}
+                            </span>
+                            <span className={`text-xs px-2 py-1 rounded w-fit mt-1 ${profile.is_license_verified ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}>
+                              {profile.is_license_verified ? 'Licenca verifikovana' : 'Licenca nije verifikovana'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant={profile.is_license_verified ? "outline" : "default"}
+                            onClick={async () => {
+                              const { error } = await supabase
+                                .from('profiles')
+                                .update({ is_license_verified: !profile.is_license_verified })
+                                .eq('id', profile.id);
+                              if (error) {
+                                toast.error("Greška pri ažuriranju");
+                              } else {
+                                toast.success(profile.is_license_verified ? "Licenca deaktivirana" : "Licenca verifikovana");
+                                fetchData();
+                              }
+                            }}
+                          >
+                            {profile.is_license_verified ? 'Ukloni verifikaciju' : 'Verifikuj licencu'}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  {profiles.filter(p => p.license_type && p.license_number).length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                      Nema profesionalaca sa licencama
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -419,8 +419,11 @@ export type Database = {
           id: string
           instagram_url: string | null
           is_active: boolean | null
+          is_license_verified: boolean | null
           last_name: string
           latitude: number | null
+          license_number: string | null
+          license_type: Database["public"]["Enums"]["license_type"] | null
           linkedin_url: string | null
           long_description: string | null
           longitude: number | null
@@ -454,8 +457,11 @@ export type Database = {
           id: string
           instagram_url?: string | null
           is_active?: boolean | null
+          is_license_verified?: boolean | null
           last_name: string
           latitude?: number | null
+          license_number?: string | null
+          license_type?: Database["public"]["Enums"]["license_type"] | null
           linkedin_url?: string | null
           long_description?: string | null
           longitude?: number | null
@@ -489,8 +495,11 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           is_active?: boolean | null
+          is_license_verified?: boolean | null
           last_name?: string
           latitude?: number | null
+          license_number?: string | null
+          license_type?: Database["public"]["Enums"]["license_type"] | null
           linkedin_url?: string | null
           long_description?: string | null
           longitude?: number | null
@@ -566,6 +575,7 @@ export type Database = {
           created_at: string | null
           google_analytics_id: string | null
           id: string
+          require_admin_approval: boolean | null
           show_availability_filter: boolean | null
           show_map_search: boolean | null
           updated_at: string | null
@@ -574,6 +584,7 @@ export type Database = {
           created_at?: string | null
           google_analytics_id?: string | null
           id?: string
+          require_admin_approval?: boolean | null
           show_availability_filter?: boolean | null
           show_map_search?: boolean | null
           updated_at?: string | null
@@ -582,6 +593,7 @@ export type Database = {
           created_at?: string | null
           google_analytics_id?: string | null
           id?: string
+          require_admin_approval?: boolean | null
           show_availability_filter?: boolean | null
           show_map_search?: boolean | null
           updated_at?: string | null
@@ -760,6 +772,7 @@ export type Database = {
       app_role: "admin" | "user"
       business_type: "company" | "individual"
       entity_type: "fbih" | "rs" | "brcko"
+      license_type: "certified_accountant" | "certified_accounting_technician"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -890,6 +903,7 @@ export const Constants = {
       app_role: ["admin", "user"],
       business_type: ["company", "individual"],
       entity_type: ["fbih", "rs", "brcko"],
+      license_type: ["certified_accountant", "certified_accounting_technician"],
     },
   },
 } as const

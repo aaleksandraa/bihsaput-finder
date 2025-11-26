@@ -86,10 +86,16 @@ const Registration = () => {
       }
     }
     
-    if (step === 2 && formData.business_type) {
-      if (!formData.business_street || !formData.business_city_id) {
-        toast.error("Molimo popunite poslovnu adresu");
+    if (step === 2) {
+      if (!formData.license_type || !formData.license_number) {
+        toast.error("Molimo popunite podatke o licenci");
         return false;
+      }
+      if (formData.business_type) {
+        if (!formData.business_street || !formData.business_city_id) {
+          toast.error("Molimo popunite poslovnu adresu");
+          return false;
+        }
       }
     }
     
@@ -117,6 +123,14 @@ const Registration = () => {
     setIsLoading(true);
     
     try {
+      // Check if admin approval is required
+      const { data: settings } = await supabase
+        .from('site_settings')
+        .select('require_admin_approval')
+        .single();
+
+      const requireApproval = settings?.require_admin_approval || false;
+      
       // Update profile
       const { error: profileError } = await supabase
         .from('profiles')
@@ -128,6 +142,8 @@ const Registration = () => {
           phone: formData.phone,
           personal_street: formData.personal_street,
           personal_city_id: formData.personal_city_id,
+          license_type: formData.license_type,
+          license_number: formData.license_number,
           business_type: formData.business_type,
           company_name: formData.company_name,
           website: formData.website,
@@ -148,6 +164,7 @@ const Registration = () => {
           instagram_url: formData.instagram_url,
           professional_organizations: formData.professional_organizations,
           registration_completed: true,
+          is_active: !requireApproval, // Set inactive if admin approval is required
         });
 
       if (profileError) throw profileError;
@@ -205,7 +222,11 @@ const Registration = () => {
         }
       }
 
-      toast.success("Profil uspješno kreiran!");
+      toast.success(
+        requireApproval 
+          ? "Profil uspješno kreiran! Vaš profil čeka odobrenje administratora prije nego što postane javno vidljiv."
+          : "Profil uspješno kreiran!"
+      );
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Registration error:", error);

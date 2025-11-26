@@ -170,22 +170,16 @@ const Profile = () => {
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <h1 className="text-lg font-bold leading-tight mb-1">{displayName}</h1>
                   
-                  {/* License Badge Mobile */}
+                  {/* License Title Mobile */}
                   {(profile as any).license_type && (
-                    <div className="mb-1">
-                      <Badge 
-                        variant="secondary" 
-                        className={`text-xs px-2 py-0.5 ${
-                          (profile as any).is_license_verified 
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 border border-blue-300 dark:border-blue-700'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                        }`}
-                      >
-                        <Award className="h-3 w-3 mr-1" />
-                        {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
-                        {(profile as any).is_license_verified && ' ✓'}
-                      </Badge>
-                    </div>
+                    <p className={`text-xs font-semibold mb-1 ${
+                      (profile as any).is_license_verified 
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}>
+                      {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
+                      {(profile as any).is_license_verified && ' ✓'}
+                    </p>
                   )}
                   
                   {profile.short_description && (
@@ -274,24 +268,18 @@ const Profile = () => {
               
                 <div className="space-y-3">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-bold mb-1">{displayName}</h1>
+                  <h1 className="text-3xl md:text-4xl font-bold mb-2">{displayName}</h1>
                   
-                  {/* License Badge */}
+                  {/* License Title Desktop */}
                   {(profile as any).license_type && (
-                    <div className="mb-2">
-                      <Badge 
-                        variant="secondary" 
-                        className={`text-sm px-3 py-1 ${
-                          (profile as any).is_license_verified 
-                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 border border-blue-300 dark:border-blue-700'
-                            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                        }`}
-                      >
-                        <Award className="h-4 w-4 mr-1.5" />
-                        {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
-                        {(profile as any).is_license_verified && ' • Verifikovano'}
-                      </Badge>
-                    </div>
+                    <p className={`text-base font-semibold mb-2 ${
+                      (profile as any).is_license_verified 
+                        ? 'text-blue-600 dark:text-blue-400'
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}>
+                      {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
+                      {(profile as any).is_license_verified && ' ✓'}
+                    </p>
                   )}
                   
                   {profile.short_description && (

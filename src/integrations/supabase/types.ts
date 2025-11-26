@@ -578,6 +578,7 @@ export type Database = {
           require_admin_approval: boolean | null
           show_availability_filter: boolean | null
           show_map_search: boolean | null
+          show_verified_filter: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -587,6 +588,7 @@ export type Database = {
           require_admin_approval?: boolean | null
           show_availability_filter?: boolean | null
           show_map_search?: boolean | null
+          show_verified_filter?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -596,6 +598,7 @@ export type Database = {
           require_admin_approval?: boolean | null
           show_availability_filter?: boolean | null
           show_map_search?: boolean | null
+          show_verified_filter?: boolean | null
           updated_at?: string | null
         }
         Relationships: []

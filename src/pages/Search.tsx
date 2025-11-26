@@ -19,6 +19,7 @@ const Search = () => {
     city: searchParams.get('city') || '',
     services: searchParams.getAll('service'),
     onlyAvailable: searchParams.get('available') === 'true',
+    onlyVerified: searchParams.get('verified') === 'true',
     nearMe: searchParams.get('nearMe') === 'true',
     userLat: parseFloat(searchParams.get('userLat') || '0'),
     userLng: parseFloat(searchParams.get('userLng') || '0'),
@@ -47,13 +48,18 @@ const Search = () => {
           has_physical_office,
           latitude,
           longitude,
-          accepting_new_clients
+          accepting_new_clients,
+          is_license_verified
         `)
         .eq('is_active', true)
         .eq('registration_completed', true);
 
       if (filters?.onlyAvailable) {
         query = query.eq('accepting_new_clients', true);
+      }
+
+      if (filters?.onlyVerified) {
+        query = query.eq('is_license_verified', true);
       }
 
       if (filters?.searchTerm) {

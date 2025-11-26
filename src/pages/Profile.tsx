@@ -581,37 +581,6 @@ const Profile = () => {
                 </Card>
               )}
 
-              {/* Working Hours */}
-              {workingHours.length > 0 && (
-                <Card className="animate-fade-in">
-                  <CardContent className="pt-6">
-                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                      <Clock className="h-5 w-5 text-primary" />
-                      Radno vrijeme
-                    </h3>
-                    
-                    <div className="space-y-2">
-                      {workingHours
-                        .sort((a: any, b: any) => {
-                          const dayA = a.day_of_week === 0 ? 6 : a.day_of_week - 1;
-                          const dayB = b.day_of_week === 0 ? 6 : b.day_of_week - 1;
-                          return dayA - dayB;
-                        })
-                        .map((hour: any) => {
-                          const dayIndex = hour.day_of_week === 0 ? 6 : hour.day_of_week - 1;
-                          return (
-                            <div key={hour.id} className="flex justify-between text-sm py-2 border-b border-border/50 last:border-0">
-                              <span className="font-medium">{DAYS[dayIndex]}</span>
-                              <span className="text-muted-foreground">
-                                {hour.is_closed ? 'Neradni dan' : `${formatTime(hour.start_time)} - ${formatTime(hour.end_time)}`}
-                              </span>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </div>
           </div>
         </div>

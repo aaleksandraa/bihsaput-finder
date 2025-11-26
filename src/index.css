@@ -166,3 +166,61 @@ All colors MUST be HSL.
 .dark .leaflet-popup-tip {
   background: hsl(220 15% 16%) !important;
 }
+
+/* Custom marker cluster styles */
+.marker-cluster {
+  background-color: transparent !important;
+  border: none !important;
+}
+
+.marker-cluster-custom {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 3px solid white;
+  transition: all 0.2s ease;
+}
+
+.marker-cluster-custom:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.marker-cluster-small .marker-cluster-custom {
+  background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
+}
+
+.marker-cluster-medium .marker-cluster-custom {
+  width: 50px;
+  height: 50px;
+  font-size: 16px;
+  background: linear-gradient(135deg, hsl(217.2 32.6% 17.5%) 0%, hsl(222.2 47.4% 25%) 100%);
+}
+
+.marker-cluster-large .marker-cluster-custom {
+  width: 60px;
+  height: 60px;
+  font-size: 18px;
+  background: linear-gradient(135deg, hsl(222.2 47.4% 25%) 0%, hsl(217.2 32.6% 35%) 100%);
+}
+
+/* Dark mode cluster styles */
+.dark .marker-cluster-custom {
+  background: linear-gradient(135deg, hsl(240 5% 45%) 0%, hsl(240 5% 65%) 100%);
+}
+
+.dark .marker-cluster-medium .marker-cluster-custom {
+  background: linear-gradient(135deg, hsl(240 5% 55%) 0%, hsl(240 5% 75%) 100%);
+}
+
+.dark .marker-cluster-large .marker-cluster-custom {
+  background: linear-gradient(135deg, hsl(240 5% 65%) 0%, hsl(240 5% 85%) 100%);
+}

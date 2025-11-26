@@ -588,16 +588,35 @@ const Admin = () => {
                               {serviceCategories.filter(s => s.parent_id === category.id).length > 0 && (
                                 <div className="mt-2 ml-4 space-y-1">
                                   {serviceCategories.filter(s => s.parent_id === category.id).map((sub) => (
-                                    <div key={sub.id} className="flex items-center justify-between p-2 bg-muted/50 rounded text-sm">
-                                      <span>{sub.name}</span>
-                                      <div className="flex gap-1">
-                                        <Button size="sm" variant="ghost" onClick={() => setEditingService(sub)}>
-                                          <Edit className="h-3 w-3" />
-                                        </Button>
-                                        <Button size="sm" variant="ghost" onClick={() => handleDeleteService(sub.id)}>
-                                          <Trash2 className="h-3 w-3" />
-                                        </Button>
-                                      </div>
+                                    <div key={sub.id} className="p-2 bg-muted/50 rounded text-sm">
+                                      {editingService?.id === sub.id ? (
+                                        <div className="space-y-2">
+                                          <Input
+                                            value={editingService.name}
+                                            onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+                                          />
+                                          <Textarea
+                                            value={editingService.description || ''}
+                                            onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                                          />
+                                          <div className="flex gap-2">
+                                            <Button size="sm" onClick={handleUpdateService}>Sačuvaj</Button>
+                                            <Button size="sm" variant="ghost" onClick={() => setEditingService(null)}>Otkaži</Button>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="flex items-center justify-between">
+                                          <span>{sub.name}</span>
+                                          <div className="flex gap-1">
+                                            <Button size="sm" variant="ghost" onClick={() => setEditingService(sub)}>
+                                              <Edit className="h-3 w-3" />
+                                            </Button>
+                                            <Button size="sm" variant="ghost" onClick={() => handleDeleteService(sub.id)}>
+                                              <Trash2 className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   ))}
                                 </div>

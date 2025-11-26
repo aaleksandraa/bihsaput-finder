@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Mail, Phone, Globe, ExternalLink, UserCheck, UserX } from "lucide-react";
+import { MapPin, Mail, Phone, Globe, ExternalLink, UserCheck, UserX, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 
 interface ProfileCardProps {
@@ -28,6 +28,24 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
             <h3 className="text-xl font-bold mb-1.5 leading-tight">
               {profile.company_name || `${profile.first_name} ${profile.last_name}`}
             </h3>
+            
+            {/* License Badge */}
+            {(profile as any).license_type && (
+              <div className="mb-1.5">
+                <Badge 
+                  variant="secondary" 
+                  className={`text-xs px-2 py-0.5 ${
+                    (profile as any).is_license_verified 
+                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 border border-blue-300 dark:border-blue-700'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                  }`}
+                >
+                  {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
+                  {(profile as any).is_license_verified && ' ✓'}
+                </Badge>
+              </div>
+            )}
+            
             <p className="text-sm text-muted-foreground font-medium">
               {profile.business_type === 'company' ? 'Firma' : 'Samostalni knjigovođa'}
             </p>

@@ -1,6 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import L from 'leaflet';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import SearchFilters from "@/components/SearchFilters";
@@ -18,7 +21,7 @@ const MapView = () => {
   const [user, setUser] = useState<any>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
+  const markerClusterRef = useRef<L.MarkerClusterGroup | null>(null);
 
   const { data: profiles = [] } = useQuery({
     queryKey: ['map-profiles'],
@@ -91,106 +94,150 @@ const MapView = () => {
   useEffect(() => {
     if (!mapInstanceRef.current) return;
 
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
+    // Clear existing cluster group
+    if (markerClusterRef.current) {
+      markerClusterRef.current.clearLayers();
+    } else {
+      // Initialize marker cluster group with optimized options
+      markerClusterRef.current = L.markerClusterGroup({
+        chunkedLoading: true,
+        chunkInterval: 200,
+        chunkDelay: 50,
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: (cluster) => {
+          const count = cluster.getChildCount();
+          let size = 'small';
+          if (count > 10) size = 'medium';
+          if (count > 50) size = 'large';
+          
+          return L.divIcon({
+            html: `<div class="marker-cluster-custom">${count}</div>`,
+            className: `marker-cluster marker-cluster-${size}`,
+            iconSize: L.point(40, 40)
+          });
+        }
+      });
+      mapInstanceRef.current.addLayer(markerClusterRef.current);
+    }
 
-    // Add new markers with custom modern icon
-    profiles.forEach((profile) => {
-      if (profile.latitude && profile.longitude) {
-        // Create custom modern marker icon
-        const customIcon = L.divIcon({
-          className: 'custom-marker',
-          html: `
-            <div style="
-              position: relative;
-              width: 40px;
-              height: 40px;
-            ">
+    // Add markers to cluster group in batches
+    const batchSize = 100;
+    let currentBatch = 0;
+
+    const addBatch = () => {
+      const start = currentBatch * batchSize;
+      const end = Math.min(start + batchSize, profiles.length);
+      const batch = profiles.slice(start, end);
+
+      batch.forEach((profile) => {
+        if (profile.latitude && profile.longitude) {
+          // Create custom modern marker icon
+          const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: `
               <div style="
-                position: absolute;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 32px;
-                height: 32px;
-                background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
-                border-radius: 50% 50% 50% 0;
-                transform: translateX(-50%) rotate(-45deg);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-                border: 3px solid white;
-              "></div>
-              <div style="
-                position: absolute;
-                top: 6px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 12px;
-                height: 12px;
-                background: white;
-                border-radius: 50%;
-                z-index: 1;
-              "></div>
-            </div>
-          `,
-          iconSize: [40, 40],
-          iconAnchor: [20, 40],
-          popupAnchor: [0, -40]
-        });
-
-        const marker = L.marker([Number(profile.latitude), Number(profile.longitude)], { 
-          icon: customIcon 
-        }).addTo(mapInstanceRef.current!);
-
-        const popupContent = `
-          <div style="
-            padding: 16px;
-            min-width: 240px;
-            font-family: system-ui, -apple-system, sans-serif;
-          ">
-            <h3 style="
-              font-weight: 600;
-              font-size: 16px;
-              color: hsl(222.2 47.4% 11.2%);
-              margin-bottom: 8px;
-            ">
-              ${profile.company_name || `${profile.first_name} ${profile.last_name}`}
-            </h3>
-            ${profile.short_description ? `
-              <p style="
-                font-size: 14px;
-                color: hsl(215.4 16.3% 46.9%);
-                margin-bottom: 12px;
-                line-height: 1.4;
+                position: relative;
+                width: 40px;
+                height: 40px;
               ">
-                ${profile.short_description}
-              </p>
-            ` : ''}
-            <a href="/profil/${profile.slug}" style="
-              display: inline-block;
-              width: 100%;
-              padding: 8px 16px;
-              background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
-              color: white;
-              text-align: center;
-              border-radius: 6px;
-              text-decoration: none;
-              font-size: 14px;
-              font-weight: 500;
-              transition: all 0.2s;
-            " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
-              Pogledaj profil →
-            </a>
-          </div>
-        `;
+                <div style="
+                  position: absolute;
+                  top: 0;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 32px;
+                  height: 32px;
+                  background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
+                  border-radius: 50% 50% 50% 0;
+                  transform: translateX(-50%) rotate(-45deg);
+                  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                  border: 3px solid white;
+                "></div>
+                <div style="
+                  position: absolute;
+                  top: 6px;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 12px;
+                  height: 12px;
+                  background: white;
+                  border-radius: 50%;
+                  z-index: 1;
+                "></div>
+              </div>
+            `,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40]
+          });
 
-        marker.bindPopup(popupContent, {
-          className: 'custom-popup',
-          maxWidth: 300
-        });
-        markersRef.current.push(marker);
+          const marker = L.marker([Number(profile.latitude), Number(profile.longitude)], { 
+            icon: customIcon 
+          });
+
+          const popupContent = `
+            <div style="
+              padding: 16px;
+              min-width: 240px;
+              font-family: system-ui, -apple-system, sans-serif;
+            ">
+              <h3 style="
+                font-weight: 600;
+                font-size: 16px;
+                color: hsl(222.2 47.4% 11.2%);
+                margin-bottom: 8px;
+              ">
+                ${profile.company_name || `${profile.first_name} ${profile.last_name}`}
+              </h3>
+              ${profile.short_description ? `
+                <p style="
+                  font-size: 14px;
+                  color: hsl(215.4 16.3% 46.9%);
+                  margin-bottom: 12px;
+                  line-height: 1.4;
+                ">
+                  ${profile.short_description}
+                </p>
+              ` : ''}
+              <a href="/profil/${profile.slug}" style="
+                display: inline-block;
+                width: 100%;
+                padding: 8px 16px;
+                background: linear-gradient(135deg, hsl(222.2 47.4% 11.2%) 0%, hsl(217.2 32.6% 17.5%) 100%);
+                color: white;
+                text-align: center;
+                border-radius: 6px;
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.2s;
+              " onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform=''; this.style.boxShadow=''">
+                Pogledaj profil →
+              </a>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent, {
+            className: 'custom-popup',
+            maxWidth: 300
+          });
+
+          markerClusterRef.current?.addLayer(marker);
+        }
+      });
+
+      currentBatch++;
+      if (end < profiles.length) {
+        requestAnimationFrame(addBatch);
       }
-    });
+    };
+
+    if (profiles.length > 0) {
+      addBatch();
+    }
   }, [profiles]);
 
   const handleSearch = (filters: any) => {

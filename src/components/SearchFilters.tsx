@@ -38,6 +38,8 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
   const [onlyAvailable, setOnlyAvailable] = useState(searchParams.get('available') === 'true');
   const [showAvailabilityFilter, setShowAvailabilityFilter] = useState(false);
   const [citySearchOpen, setCitySearchOpen] = useState(false);
+  const [onlyVerified, setOnlyVerified] = useState(searchParams.get('verified') === 'true');
+  const [showVerifiedFilter, setShowVerifiedFilter] = useState(false);
 
   useEffect(() => {
     fetchServiceCategories();
@@ -47,11 +49,12 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
   const fetchSiteSettings = async () => {
     const { data } = await supabase
       .from('site_settings')
-      .select('show_availability_filter')
+      .select('show_availability_filter, show_verified_filter')
       .single();
     
     if (data) {
       setShowAvailabilityFilter(data.show_availability_filter || false);
+      setShowVerifiedFilter(data.show_verified_filter || false);
     }
   };
 
@@ -118,6 +121,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
       city: selectedCity,
       services: selectedServices,
       onlyAvailable,
+      onlyVerified,
     };
 
     // If onSearch is provided, call it (for Search page)
@@ -131,6 +135,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
       if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity);
       selectedServices.forEach(service => params.append('service', service));
       if (onlyAvailable) params.set('available', 'true');
+      if (onlyVerified) params.set('verified', 'true');
       
       navigate(`/search?${params.toString()}`);
     }
@@ -157,6 +162,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
           city: selectedCity,
           services: selectedServices,
           onlyAvailable,
+          onlyVerified,
           nearMe: true,
           userLat: latitude,
           userLng: longitude,
@@ -171,6 +177,7 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
           if (selectedCity && selectedCity !== 'all') params.set('city', selectedCity);
           selectedServices.forEach(service => params.append('service', service));
           if (onlyAvailable) params.set('available', 'true');
+          if (onlyVerified) params.set('verified', 'true');
           params.set('nearMe', 'true');
           params.set('userLat', latitude.toString());
           params.set('userLng', longitude.toString());
@@ -353,6 +360,23 @@ const SearchFilters = ({ onSearch }: SearchFiltersProps) => {
             <UserCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
             <Label htmlFor="only-available" className="cursor-pointer font-medium text-sm">
               Samo dostupni za nove klijente
+            </Label>
+          </div>
+        </div>
+      )}
+
+      {/* Verified Filter - Only shown if enabled by admin */}
+      {showVerifiedFilter && (
+        <div className="flex items-center space-x-3 p-4 border rounded-lg bg-muted/30">
+          <Checkbox
+            id="only-verified"
+            checked={onlyVerified}
+            onCheckedChange={(checked) => setOnlyVerified(checked as boolean)}
+          />
+          <div className="flex items-center gap-2">
+            <UserCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <Label htmlFor="only-verified" className="cursor-pointer font-medium text-sm">
+              Samo verifikovani profesionalci
             </Label>
           </div>
         </div>

@@ -129,15 +129,36 @@ const Admin = () => {
   };
 
   const handleToggleUserActive = async (userId: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    
+    // Find the profile to get email and name
+    const profile = profiles.find(p => p.id === userId);
+    
     const { error } = await supabase
       .from('profiles')
-      .update({ is_active: !currentStatus })
+      .update({ is_active: newStatus })
       .eq('id', userId);
 
     if (error) {
       toast.error("Greška pri ažuriranju");
     } else {
       toast.success("Korisnik uspješno ažuriran");
+      
+      // Send email notification if profile was activated (approved)
+      if (newStatus && profile) {
+        try {
+          await supabase.functions.invoke('send-notification-email', {
+            body: {
+              email: profile.email,
+              name: `${profile.first_name} ${profile.last_name}`,
+              type: 'profile_approved'
+            }
+          });
+        } catch (emailError) {
+          console.error('Failed to send email:', emailError);
+        }
+      }
+      
       fetchData();
     }
   };
@@ -503,14 +524,33 @@ const Admin = () => {
                             size="sm"
                             variant={profile.is_license_verified ? "outline" : "default"}
                             onClick={async () => {
+                              const newVerifiedStatus = !profile.is_license_verified;
+                              
                               const { error } = await supabase
                                 .from('profiles')
-                                .update({ is_license_verified: !profile.is_license_verified })
+                                .update({ is_license_verified: newVerifiedStatus })
                                 .eq('id', profile.id);
+                                
                               if (error) {
                                 toast.error("Greška pri ažuriranju");
                               } else {
                                 toast.success(profile.is_license_verified ? "Licenca deaktivirana" : "Licenca verifikovana");
+                                
+                                // Send email notification if license was verified
+                                if (newVerifiedStatus) {
+                                  try {
+                                    await supabase.functions.invoke('send-notification-email', {
+                                      body: {
+                                        email: profile.email,
+                                        name: `${profile.first_name} ${profile.last_name}`,
+                                        type: 'license_verified'
+                                      }
+                                    });
+                                  } catch (emailError) {
+                                    console.error('Failed to send email:', emailError);
+                                  }
+                                }
+                                
                                 fetchData();
                               }
                             }}

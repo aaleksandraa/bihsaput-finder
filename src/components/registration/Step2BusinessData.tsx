@@ -66,6 +66,32 @@ const Step2BusinessData = ({ data, onChange }: Step2Props) => {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
+        <Label>Licenca *</Label>
+        <RadioGroup value={data.license_type} onValueChange={(value) => handleChange('license_type', value)}>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="certified_accountant" id="certified_accountant" />
+            <Label htmlFor="certified_accountant">Certifikovani računovođa</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="certified_accounting_technician" id="certified_accounting_technician" />
+            <Label htmlFor="certified_accounting_technician">Certifikovani računovodstveni tehničar</Label>
+          </div>
+        </RadioGroup>
+      </div>
+
+      {data.license_type && (
+        <div className="space-y-2">
+          <Label htmlFor="licenseNumber">Broj licence *</Label>
+          <Input
+            id="licenseNumber"
+            value={data.license_number || ''}
+            onChange={(e) => handleChange('license_number', e.target.value)}
+            placeholder="Unesite broj licence"
+          />
+        </div>
+      )}
+
+      <div className="space-y-4">
         <Label>Tip poslovanja *</Label>
         <RadioGroup value={data.business_type} onValueChange={(value) => handleChange('business_type', value)}>
           <div className="flex items-center space-x-2">

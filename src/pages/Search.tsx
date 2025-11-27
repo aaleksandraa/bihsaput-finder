@@ -237,8 +237,14 @@ const Search = () => {
             <p className="text-base text-muted-foreground font-medium">
               {isLoading ? 'Pretraga u toku...' : (
                 <>
-                  Pronađeno {profiles.length} profil{profiles.length !== 1 ? 'a' : ''}
-                  {totalPages > 1 && ` • Stranica ${currentPage} od ${totalPages}`}
+                  {profiles.length > 0 ? (
+                    <>
+                      Prikazujem {startIndex + 1}-{Math.min(endIndex, profiles.length)} od {profiles.length} profil{profiles.length !== 1 ? 'a' : ''}
+                      {totalPages > 1 && ` • Stranica ${currentPage} od ${totalPages}`}
+                    </>
+                  ) : (
+                    'Nema pronađenih rezultata'
+                  )}
                 </>
               )}
             </p>

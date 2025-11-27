@@ -49,7 +49,8 @@ const Search = () => {
           latitude,
           longitude,
           accepting_new_clients,
-          is_license_verified
+          is_license_verified,
+          license_type
         `)
         .eq('is_active', true)
         .eq('registration_completed', true);

@@ -580,6 +580,7 @@ export type Database = {
           show_map_search: boolean | null
           show_verified_filter: boolean | null
           updated_at: string | null
+          verification_display_mode: string | null
         }
         Insert: {
           created_at?: string | null
@@ -590,6 +591,7 @@ export type Database = {
           show_map_search?: boolean | null
           show_verified_filter?: boolean | null
           updated_at?: string | null
+          verification_display_mode?: string | null
         }
         Update: {
           created_at?: string | null
@@ -600,6 +602,7 @@ export type Database = {
           show_map_search?: boolean | null
           show_verified_filter?: boolean | null
           updated_at?: string | null
+          verification_display_mode?: string | null
         }
         Relationships: []
       }

@@ -18,6 +18,7 @@ import {
   useProfileCertificates,
   useWorkingHours 
 } from "@/hooks/useProfiles";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import {
   Mail,
   Phone,
@@ -33,6 +34,7 @@ import {
   Calendar,
   UserCheck,
   UserX,
+  CheckCircle2,
 } from "lucide-react";
 import { Loader2 } from "lucide-react";
 
@@ -51,6 +53,8 @@ const Profile = () => {
 
   // Use React Query hooks for efficient data fetching
   const { data: profile, isLoading: profileLoading } = useProfile(slug);
+  const { data: settings } = useSiteSettings();
+  const verificationMode = settings?.verification_display_mode || 'colored';
   const { data: gallery = [] } = useProfileGallery(profile?.id);
   const { data: servicesData = [] } = useProfileServices(profile?.id);
   const { data: references = [] } = useProfileReferences(profile?.id);
@@ -168,17 +172,24 @@ const Profile = () => {
                 
                 {/* Name and Description */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <h1 className="text-lg font-bold leading-tight mb-1">{displayName}</h1>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <h1 className="text-lg font-bold leading-tight">{displayName}</h1>
+                    {verificationMode === 'checkmark' && (profile as any).is_license_verified && (
+                      <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                    )}
+                  </div>
                   
                   {/* License Title Mobile */}
                   {(profile as any).license_type && (
                     <p className={`text-xs font-semibold mb-1 ${
-                      (profile as any).is_license_verified 
-                        ? 'text-blue-600 dark:text-blue-400'
+                      verificationMode === 'colored'
+                        ? ((profile as any).is_license_verified 
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-gray-500 dark:text-gray-400')
                         : 'text-gray-500 dark:text-gray-400'
                     }`}>
                       {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
-                      {(profile as any).is_license_verified && ' ✓'}
+                      {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
                     </p>
                   )}
                   
@@ -268,17 +279,24 @@ const Profile = () => {
               
                 <div className="space-y-3">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-bold mb-2">{displayName}</h1>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h1 className="text-3xl md:text-4xl font-bold">{displayName}</h1>
+                    {verificationMode === 'checkmark' && (profile as any).is_license_verified && (
+                      <CheckCircle2 className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                    )}
+                  </div>
                   
                   {/* License Title Desktop */}
                   {(profile as any).license_type && (
                     <p className={`text-base font-semibold mb-2 ${
-                      (profile as any).is_license_verified 
-                        ? 'text-blue-600 dark:text-blue-400'
+                      verificationMode === 'colored'
+                        ? ((profile as any).is_license_verified 
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-gray-500 dark:text-gray-400')
                         : 'text-gray-500 dark:text-gray-400'
                     }`}>
                       {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
-                      {(profile as any).is_license_verified && ' ✓'}
+                      {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
                     </p>
                   )}
                   

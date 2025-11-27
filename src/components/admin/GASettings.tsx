@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 
 export const GASettings = () => {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ export const GASettings = () => {
   const [showMapSearch, setShowMapSearch] = useState(false);
   const [requireAdminApproval, setRequireAdminApproval] = useState(false);
   const [showVerifiedFilter, setShowVerifiedFilter] = useState(false);
+  const [verificationDisplayMode, setVerificationDisplayMode] = useState('colored');
 
   useEffect(() => {
     fetchSettings();
@@ -25,7 +27,7 @@ export const GASettings = () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('google_analytics_id, show_availability_filter, show_map_search, require_admin_approval, show_verified_filter')
+        .select('google_analytics_id, show_availability_filter, show_map_search, require_admin_approval, show_verified_filter, verification_display_mode')
         .single();
 
       if (error) throw error;
@@ -35,6 +37,7 @@ export const GASettings = () => {
       setShowMapSearch(data?.show_map_search || false);
       setRequireAdminApproval(data?.require_admin_approval || false);
       setShowVerifiedFilter(data?.show_verified_filter || false);
+      setVerificationDisplayMode(data?.verification_display_mode || 'colored');
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast.error('Greška pri učitavanju postavki');
@@ -53,7 +56,8 @@ export const GASettings = () => {
           show_availability_filter: showAvailabilityFilter,
           show_map_search: showMapSearch,
           require_admin_approval: requireAdminApproval,
-          show_verified_filter: showVerifiedFilter
+          show_verified_filter: showVerifiedFilter,
+          verification_display_mode: verificationDisplayMode
         })
         .eq('id', (await supabase.from('site_settings').select('id').single()).data?.id);
 
@@ -212,6 +216,57 @@ export const GASettings = () => {
               </p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Prikaz verifikacije licence</CardTitle>
+          <CardDescription>
+            Odaberite kako će se prikazivati verifikovane licence profesionalaca
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <RadioGroup value={verificationDisplayMode} onValueChange={setVerificationDisplayMode}>
+            <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+              <RadioGroupItem value="colored" id="colored" className="mt-1" />
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="colored" className="cursor-pointer font-medium">
+                  Obojena verifikacija (Plava boja)
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Verifikovane licence se prikazuju u plavoj boji za isticanje
+                </p>
+                <div className="mt-3 p-3 bg-background rounded border">
+                  <p className="text-sm font-medium mb-1">Primer:</p>
+                  <p className="text-blue-600 dark:text-blue-400 text-sm font-medium">
+                    Certifikovani računovođa ✓
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+              <RadioGroupItem value="checkmark" id="checkmark" className="mt-1" />
+              <div className="flex-1 space-y-2">
+                <Label htmlFor="checkmark" className="cursor-pointer font-medium">
+                  Diskretni checkmark (Siva boja + ikona)
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Verifikovane licence ostaju u sivoj boji sa malim checkmark-om pored imena (kao Facebook/Instagram)
+                </p>
+                <div className="mt-3 p-3 bg-background rounded border">
+                  <p className="text-sm font-medium mb-1">Primer:</p>
+                  <div className="flex items-center gap-1">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+                      Ime Prezime
+                    </p>
+                    <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </RadioGroup>
         </CardContent>
       </Card>
 

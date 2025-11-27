@@ -1,14 +1,18 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Mail, Phone, Globe, ExternalLink, UserCheck, UserX } from "lucide-react";
+import { MapPin, Mail, Phone, Globe, ExternalLink, UserCheck, UserX, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 interface ProfileCardProps {
   profile: any;
 }
 
 const ProfileCard = ({ profile }: ProfileCardProps) => {
+  const { data: settings } = useSiteSettings();
+  const verificationMode = settings?.verification_display_mode || 'colored';
+  
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in h-full flex flex-col border-border/50">
       <CardHeader className="pb-6 space-y-4">
@@ -25,19 +29,26 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h3 className="text-xl font-bold mb-1.5 leading-tight">
-              {profile.company_name || `${profile.first_name} ${profile.last_name}`}
-            </h3>
+            <div className="flex items-center gap-2 mb-1.5">
+              <h3 className="text-xl font-bold leading-tight">
+                {profile.company_name || `${profile.first_name} ${profile.last_name}`}
+              </h3>
+              {verificationMode === 'checkmark' && (profile as any).is_license_verified && (
+                <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              )}
+            </div>
             
             {/* License Title */}
             {(profile as any).license_type && (
               <p className={`text-sm font-medium mb-1 ${
-                (profile as any).is_license_verified 
-                  ? 'text-blue-600 dark:text-blue-400'
+                verificationMode === 'colored'
+                  ? ((profile as any).is_license_verified 
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : 'text-gray-500 dark:text-gray-400')
                   : 'text-gray-500 dark:text-gray-400'
               }`}>
                 {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
-                {(profile as any).is_license_verified && ' ✓'}
+                {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
               </p>
             )}
           </div>

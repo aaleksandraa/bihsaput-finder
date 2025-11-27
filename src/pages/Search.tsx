@@ -17,12 +17,19 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Search = () => {
   const [user, setUser] = useState<any>(null);
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentPage, setCurrentPage] = useState(1);
-  const profilesPerPage = 12;
+  const [profilesPerPage, setProfilesPerPage] = useState(12);
 
   const filters = {
     searchTerm: searchParams.get('q') || '',
@@ -172,7 +179,7 @@ const Search = () => {
     window.location.search = params.toString();
   };
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when filters or profiles per page change
   useEffect(() => {
     setCurrentPage(1);
   }, [
@@ -182,7 +189,8 @@ const Search = () => {
     searchParams.getAll('service').join(','),
     searchParams.get('available'),
     searchParams.get('verified'),
-    searchParams.get('nearMe')
+    searchParams.get('nearMe'),
+    profilesPerPage
   ]);
 
   // Calculate pagination
@@ -230,24 +238,45 @@ const Search = () => {
       {/* Results Section */}
       <section className="py-16">
         <div className="container max-w-7xl">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold mb-3 tracking-tight">
-              {hasActiveFilters ? 'Rezultati pretrage' : 'Svi profili'}
-            </h2>
-            <p className="text-base text-muted-foreground font-medium">
-              {isLoading ? 'Pretraga u toku...' : (
-                <>
-                  {profiles.length > 0 ? (
-                    <>
-                      Prikazujem {startIndex + 1}-{Math.min(endIndex, profiles.length)} od {profiles.length} profil{profiles.length !== 1 ? 'a' : ''}
-                      {totalPages > 1 && ` • Stranica ${currentPage} od ${totalPages}`}
-                    </>
-                  ) : (
-                    'Nema pronađenih rezultata'
-                  )}
-                </>
-              )}
-            </p>
+          <div className="mb-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold mb-3 tracking-tight">
+                {hasActiveFilters ? 'Rezultati pretrage' : 'Svi profili'}
+              </h2>
+              <p className="text-base text-muted-foreground font-medium">
+                {isLoading ? 'Pretraga u toku...' : (
+                  <>
+                    {profiles.length > 0 ? (
+                      <>
+                        Prikazujem {startIndex + 1}-{Math.min(endIndex, profiles.length)} od {profiles.length} profil{profiles.length !== 1 ? 'a' : ''}
+                        {totalPages > 1 && ` • Stranica ${currentPage} od ${totalPages}`}
+                      </>
+                    ) : (
+                      'Nema pronađenih rezultata'
+                    )}
+                  </>
+                )}
+              </p>
+            </div>
+            
+            {profiles.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">Profila po stranici:</span>
+                <Select
+                  value={profilesPerPage.toString()}
+                  onValueChange={(value) => setProfilesPerPage(Number(value))}
+                >
+                  <SelectTrigger className="w-[80px] bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    <SelectItem value="12">12</SelectItem>
+                    <SelectItem value="24">24</SelectItem>
+                    <SelectItem value="48">48</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {isLoading ? (

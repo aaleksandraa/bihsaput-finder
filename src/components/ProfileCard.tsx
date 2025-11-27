@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MapPin, Mail, Phone, Globe, ExternalLink, UserCheck, UserX, CheckCircle2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -12,6 +13,10 @@ interface ProfileCardProps {
 const ProfileCard = ({ profile }: ProfileCardProps) => {
   const { data: settings } = useSiteSettings();
   const verificationMode = settings?.verification_display_mode || 'colored';
+  
+  const licenseTitle = (profile as any).license_type === 'certified_accountant' 
+    ? 'Certifikovani računovođa' 
+    : 'Certifikovani računovodstveni tehničar';
   
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 animate-fade-in h-full flex flex-col border-border/50">
@@ -34,22 +39,44 @@ const ProfileCard = ({ profile }: ProfileCardProps) => {
                 {profile.company_name || `${profile.first_name} ${profile.last_name}`}
               </h3>
               {verificationMode === 'checkmark' && (profile as any).is_license_verified && (
-                <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <CheckCircle2 className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-background border border-border z-50">
+                      <p className="text-sm">Verifikovana licenca - {licenseTitle}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
             
             {/* License Title */}
             {(profile as any).license_type && (
-              <p className={`text-sm font-medium mb-1 ${
-                verificationMode === 'colored'
-                  ? ((profile as any).is_license_verified 
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-gray-500 dark:text-gray-400')
-                  : 'text-gray-500 dark:text-gray-400'
-              }`}>
-                {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
-                {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
-              </p>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p className={`text-sm font-medium mb-1 cursor-help ${
+                      verificationMode === 'colored'
+                        ? ((profile as any).is_license_verified 
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-gray-500 dark:text-gray-400')
+                        : 'text-gray-500 dark:text-gray-400'
+                    }`}>
+                      {licenseTitle}
+                      {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-background border border-border z-50">
+                    <p className="text-sm">
+                      {(profile as any).is_license_verified 
+                        ? `Verifikovana licenca - ${licenseTitle}` 
+                        : `Licenca u procesu verifikacije - ${licenseTitle}`}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
         </div>

@@ -35,7 +35,10 @@ const Index = () => {
           website,
           years_experience,
           works_online,
-          has_physical_office
+          has_physical_office,
+          license_type,
+          is_license_verified,
+          accepting_new_clients
         `)
         .eq('is_active', true)
         .eq('registration_completed', true)

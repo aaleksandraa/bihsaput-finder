@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   useProfile, 
   useProfileGallery, 
@@ -99,6 +100,9 @@ const Profile = () => {
   }
 
   const displayName = profile.company_name || `${profile.first_name} ${profile.last_name}`;
+  const licenseTitle = (profile as any).license_type === 'certified_accountant' 
+    ? 'Certifikovani računovođa' 
+    : 'Certifikovani računovodstveni tehničar';
 
   // Generate SEO content
   const seoTitle = displayName;
@@ -155,19 +159,19 @@ const Profile = () => {
             <div className="sm:hidden">
               {/* Image with Name and Subtitle */}
               <div className="flex gap-3 mb-3">
-                {/* Profile Image */}
-                <div className="flex-shrink-0">
-                  {profile.profile_image_url ? (
-                    <img 
-                      src={profile.profile_image_url} 
-                      alt={displayName}
-                      className="h-20 w-20 rounded-lg object-cover shadow-lg border-2 border-border"
-                    />
-                  ) : (
-                    <div className="h-20 w-20 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-lg">
-                      {profile.first_name?.[0]}{profile.last_name?.[0]}
-                    </div>
-                  )}
+              {/* Profile Image */}
+              <div className="flex-shrink-0">
+                {profile.profile_image_url ? (
+                  <img 
+                    src={profile.profile_image_url} 
+                    alt={displayName}
+                    className="h-24 w-24 rounded-lg object-cover shadow-lg border-2 border-border"
+                  />
+                ) : (
+                  <div className="h-24 w-24 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-2xl font-bold shadow-lg">
+                    {profile.first_name?.[0]}{profile.last_name?.[0]}
+                  </div>
+                )}
                 </div>
                 
                 {/* Name and Description */}
@@ -175,22 +179,44 @@ const Profile = () => {
                   <div className="flex items-center gap-1.5 mb-1">
                     <h1 className="text-lg font-bold leading-tight">{displayName}</h1>
                     {verificationMode === 'checkmark' && (profile as any).is_license_verified && (
-                      <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-background border border-border z-50">
+                            <p className="text-sm">Verifikovana licenca - {licenseTitle}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </div>
                   
                   {/* License Title Mobile */}
                   {(profile as any).license_type && (
-                    <p className={`text-xs font-semibold mb-1 ${
-                      verificationMode === 'colored'
-                        ? ((profile as any).is_license_verified 
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-gray-500 dark:text-gray-400')
-                        : 'text-gray-500 dark:text-gray-400'
-                    }`}>
-                      {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
-                      {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
-                    </p>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className={`text-xs font-semibold mb-1 cursor-help ${
+                            verificationMode === 'colored'
+                              ? ((profile as any).is_license_verified 
+                                  ? 'text-blue-600 dark:text-blue-400'
+                                  : 'text-gray-500 dark:text-gray-400')
+                              : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
+                            {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-background border border-border z-50">
+                          <p className="text-sm">
+                            {(profile as any).is_license_verified 
+                              ? `Verifikovana licenca - ${licenseTitle}` 
+                              : `Licenca u procesu verifikacije - ${licenseTitle}`}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                   
                   {profile.short_description && (
@@ -262,42 +288,64 @@ const Profile = () => {
 
             {/* Desktop Layout - 3 Column */}
             <div className="hidden sm:grid sm:grid-cols-[auto_1fr_auto] gap-6 items-start">
-              {/* Column 1: Profile Image */}
-              <div className="flex-shrink-0">
-                {profile.profile_image_url ? (
-                  <img 
-                    src={profile.profile_image_url} 
-                    alt={displayName}
-                    className="h-32 w-32 rounded-lg object-cover shadow-lg border-2 border-border"
-                  />
-                ) : (
-                  <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-4xl font-bold shadow-lg">
-                    {profile.first_name?.[0]}{profile.last_name?.[0]}
-                  </div>
-                )}
-              </div>
+            {/* Column 1: Profile Image */}
+            <div className="flex-shrink-0">
+              {profile.profile_image_url ? (
+                <img 
+                  src={profile.profile_image_url} 
+                  alt={displayName}
+                  className="h-40 w-40 rounded-lg object-cover shadow-lg border-2 border-border"
+                />
+              ) : (
+                <div className="h-40 w-40 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-primary-foreground text-4xl font-bold shadow-lg">
+                  {profile.first_name?.[0]}{profile.last_name?.[0]}
+                </div>
+              )}
+            </div>
               
                 <div className="space-y-3">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <h1 className="text-3xl md:text-4xl font-bold">{displayName}</h1>
                     {verificationMode === 'checkmark' && (profile as any).is_license_verified && (
-                      <CheckCircle2 className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <CheckCircle2 className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="bg-background border border-border z-50">
+                            <p className="text-sm">Verifikovana licenca - {licenseTitle}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </div>
                   
                   {/* License Title Desktop */}
                   {(profile as any).license_type && (
-                    <p className={`text-base font-semibold mb-2 ${
-                      verificationMode === 'colored'
-                        ? ((profile as any).is_license_verified 
-                            ? 'text-blue-600 dark:text-blue-400'
-                            : 'text-gray-500 dark:text-gray-400')
-                        : 'text-gray-500 dark:text-gray-400'
-                    }`}>
-                      {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
-                      {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
-                    </p>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className={`text-base font-semibold mb-2 cursor-help ${
+                            verificationMode === 'colored'
+                              ? ((profile as any).is_license_verified 
+                                  ? 'text-blue-600 dark:text-blue-400'
+                                  : 'text-gray-500 dark:text-gray-400')
+                              : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                            {(profile as any).license_type === 'certified_accountant' ? 'Certifikovani računovođa' : 'Certifikovani računovodstveni tehničar'}
+                            {verificationMode === 'colored' && (profile as any).is_license_verified && ' ✓'}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-background border border-border z-50">
+                          <p className="text-sm">
+                            {(profile as any).is_license_verified 
+                              ? `Verifikovana licenca - ${licenseTitle}` 
+                              : `Licenca u procesu verifikacije - ${licenseTitle}`}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                   
                   {profile.short_description && (

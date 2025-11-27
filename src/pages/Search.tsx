@@ -8,10 +8,21 @@ import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { MapPin, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const Search = () => {
   const [user, setUser] = useState<any>(null);
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [currentPage, setCurrentPage] = useState(1);
+  const profilesPerPage = 12;
 
   const filters = {
     searchTerm: searchParams.get('q') || '',
@@ -161,6 +172,30 @@ const Search = () => {
     window.location.search = params.toString();
   };
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchParams.get('q'),
+    searchParams.get('entity'),
+    searchParams.get('city'),
+    searchParams.getAll('service').join(','),
+    searchParams.get('available'),
+    searchParams.get('verified'),
+    searchParams.get('nearMe')
+  ]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(profiles.length / profilesPerPage);
+  const startIndex = (currentPage - 1) * profilesPerPage;
+  const endIndex = startIndex + profilesPerPage;
+  const currentProfiles = profiles.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const hasActiveFilters = searchParams.get('q') || searchParams.get('entity') || searchParams.has('service');
   
   const searchTerm = searchParams.get('q') || '';
@@ -200,7 +235,12 @@ const Search = () => {
               {hasActiveFilters ? 'Rezultati pretrage' : 'Svi profili'}
             </h2>
             <p className="text-base text-muted-foreground font-medium">
-              {isLoading ? 'Pretraga u toku...' : `Pronađeno ${profiles.length} profil${profiles.length !== 1 ? 'a' : ''}`}
+              {isLoading ? 'Pretraga u toku...' : (
+                <>
+                  Pronađeno {profiles.length} profil{profiles.length !== 1 ? 'a' : ''}
+                  {totalPages > 1 && ` • Stranica ${currentPage} od ${totalPages}`}
+                </>
+              )}
             </p>
           </div>
 
@@ -211,10 +251,65 @@ const Search = () => {
           ) : profiles.length > 0 ? (
             <>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12">
-                {profiles.map((profile) => (
+                {currentProfiles.map((profile) => (
                   <ProfileCard key={profile.id} profile={profile} />
                 ))}
               </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mb-12">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        >
+                          Prethodna
+                        </PaginationPrevious>
+                      </PaginationItem>
+                      
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        // Show first page, last page, current page, and pages around current
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationLink
+                                onClick={() => handlePageChange(page)}
+                                isActive={page === currentPage}
+                                className="cursor-pointer"
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        } else if (page === currentPage - 2 || page === currentPage + 2) {
+                          return (
+                            <PaginationItem key={page}>
+                              <PaginationEllipsis />
+                            </PaginationItem>
+                          );
+                        }
+                        return null;
+                      })}
+                      
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        >
+                          Sljedeća
+                        </PaginationNext>
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
               
               <div className="text-center">
                 <Link to="/mapa">
